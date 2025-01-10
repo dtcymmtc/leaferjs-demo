@@ -1,7 +1,14 @@
 <template>
-  <div></div>
+  <Space
+    style="position: absolute; top: 24px; left: 50%; transform: translate(-50%, 0); z-index: 999"
+  >
+    <Button @click="drawBottom.reset">重置</Button>
+    <Button @click="drawBottom.undo">撤销</Button>
+  </Space>
 </template>
 <script setup lang="ts">
+import { Button, Space } from 'ant-design-vue';
+
 import {
   App,
   Bounds,
@@ -230,19 +237,15 @@ class Snap {
       visible: false,
     });
 
-    // 创建辅助线
-    // this.lineAuxiliaryLine = new LineAuxiliaryLine({ app: this.app });
-
     // 将鼠标指针添加到 sky 层
     this.app.sky.add(this.cursor);
 
     // 监听鼠标移动事件
     this.app.on(PointerEvent.MOVE, (event) => {
       const currentUi = this.app.findOne(`.${BottomLineStatus.Drawing}`);
-      // const [snapPoint, targetPoint] = getSnapPoint(event.x, event.y, Snap.points);
-      const { snapPoint, targets, type } = snapToPoints(new Point(event.x, event.y), Snap.points);
-      console.log(type, targets);
+      const { snapPoint, targets } = snapToPoints(new Point(event.x, event.y), Snap.points);
 
+      // 清空辅助线
       this.lineAuxiliaryLine.forEach((line) => line.remove());
       this.lineAuxiliaryLine = [];
 
@@ -252,7 +255,6 @@ class Snap {
           y: snapPoint.y,
           visible: true,
         });
-        // this.lineAuxiliaryLine?.show([targetPoint, snapPoint]);
 
         if (currentUi instanceof Line) {
           currentUi.set({
@@ -276,6 +278,10 @@ class Snap {
         });
       }
     });
+  }
+
+  getCursorPoint() {
+    return this.cursor?.visible ? new Point(this.cursor.x, this.cursor.y) : undefined;
   }
 }
 
@@ -487,13 +493,15 @@ class HintInput {
 
 /** 底边 */
 class BottomLine {
-  app: App;
-  line: Line;
+  private app: App;
+  private line: Line;
   hintInput: HintInput;
   angleAuxiliaryLine: AngleAuxiliaryLine;
+  finishCallback: (() => void) | undefined;
 
   constructor(options: { app: App; x: number; y: number; onFinish?: () => void }) {
     this.app = options.app;
+    this.finishCallback = options.onFinish;
     this.line = new Line({
       width: 0,
       strokeWidth: 16,
@@ -510,7 +518,6 @@ class BottomLine {
           this.line.width = Number(value);
           this.getEndPoint();
           this.finish();
-          options.onFinish?.();
         }
       },
     });
@@ -529,12 +536,19 @@ class BottomLine {
       this.angleAuxiliaryLine.show(this.line);
     });
 
-    Snap.points.push(new Point(this.line.x, this.line.y));
+    this.app.tree.add(this.line);
+  }
+
+  getStartPoint() {
+    return new Point(this.line.x, this.line.y);
   }
 
   getEndPoint() {
-    const { x, y } = getLineEndPoint(this.line);
-    return { x, y };
+    return getLineEndPoint(this.line);
+  }
+
+  getBounds() {
+    return new Bounds(this.line.getBounds());
   }
 
   drawing(x: number, y: number) {
@@ -545,6 +559,7 @@ class BottomLine {
         y: y - (this.line.y ?? 0),
       },
       className: BottomLineStatus.Drawing,
+      stroke: 'rgb(192,210,237)',
     });
   }
 
@@ -557,14 +572,19 @@ class BottomLine {
     this.hintInput.hide();
     this.angleAuxiliaryLine.remove();
 
-    Snap.points.push(getLineEndPoint(this.line));
+    this.finishCallback?.();
   }
 
   /** 终止绘制 */
   abort() {
-    this.line?.remove();
+    this.remove();
     this.hintInput.hide();
     this.angleAuxiliaryLine.remove();
+  }
+
+  /** 移除 */
+  remove() {
+    this.line?.remove();
   }
 }
 
@@ -572,62 +592,211 @@ class BottomLine {
 class DrawBottom {
   app: App;
   lines: LeafList = new LeafList();
+  bottomLines: BottomLine[] = [];
   currentBottomLine: BottomLine | undefined = undefined;
-  status: 'idle' | 'drawing' = 'idle';
+  status: 'init' | 'idle' | 'drawing' | 'done' = 'init';
 
   constructor(app: App) {
     this.app = app;
 
     this.onStart = this.onStart.bind(this);
     this.onMove = this.onMove.bind(this);
-    this.onEnd = this.onEnd.bind(this);
+    this.onAbort = this.onAbort.bind(this);
+    this.reset = this.reset.bind(this);
+    this.undo = this.undo.bind(this);
 
     this.app.on(PointerEvent.CLICK, this.onStart);
     this.app.on(PointerEvent.MOVE, this.onMove);
-    this.app.on(PointerEvent.MENU, this.onEnd);
+    this.app.on(PointerEvent.MENU, this.onAbort);
+  }
+
+  /** 判断点是否可绘制 */
+  isDrawablePoints(point: Point) {
+    return this.getDrawablePoints().find((item) => {
+      return point.x === item.x && point.y === item.y;
+    });
+  }
+
+  /** 获取所有可绘制的点 */
+  getDrawablePoints(): Point[] {
+    const pointCount: Map<string, number> = new Map();
+
+    // 统计每个点作为起点或终点的次数
+    for (const line of this.bottomLines) {
+      const start = line.getStartPoint();
+      const end = line.getEndPoint();
+      const startKey = `${start.x},${start.y}`;
+      const endKey = `${end.x},${end.y}`;
+
+      pointCount.set(startKey, (pointCount.get(startKey) || 0) + 1);
+      pointCount.set(endKey, (pointCount.get(endKey) || 0) + 1);
+    }
+
+    // 筛选出可绘制的点
+    const drawablePoints: Point[] = [];
+    for (const [key, count] of pointCount.entries()) {
+      if (count === 1) {
+        const [x, y] = key.split(',').map(Number);
+        drawablePoints.push(new Point(x, y));
+      }
+    }
+
+    return drawablePoints;
+  }
+
+  /** 判断点是否绘制在空白处 */
+  isDrawablePointsInEmptySpace(point: Point, threshold = 0): boolean {
+    for (const line of this.bottomLines) {
+      if (this.isPointOnLine(point, line, threshold)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /** 判断点是否在直线上 */
+  isPointOnLine(point: Point, line: BottomLine, threshold = 0) {
+    const start = line.getStartPoint();
+    const end = line.getEndPoint();
+
+    const crossProduct =
+      (point.y - start.y) * (end.x - start.x) - (point.x - start.x) * (end.y - start.y);
+
+    if (Math.abs(crossProduct) > threshold) {
+      return false;
+    }
+
+    const dotProduct =
+      (point.x - start.x) * (end.x - start.x) + (point.y - start.y) * (end.y - start.y);
+    if (dotProduct < 0) {
+      return false;
+    }
+
+    const squaredLengthBA =
+      (end.x - start.x) * (end.x - start.x) + (end.y - start.y) * (end.y - start.y);
+    if (dotProduct > squaredLengthBA) {
+      return false;
+    }
+
+    return true;
+  }
+
+  /** 是否与其他底边碰撞 */
+  isHit(line: BottomLine): boolean {
+    let result = false;
+    for (const otherLine of this.bottomLines) {
+      const hit = otherLine.getBounds().hit(line.getBounds());
+
+      if (hit) {
+        console.log('交集', otherLine.getBounds().getIntersect(line.getBounds()));
+        result = true;
+      }
+    }
+    return result;
   }
 
   onStart(node: UIEvent) {
-    let x = node.x;
-    let y = node.y;
+    const x = snap.getCursorPoint()?.x ?? node.x;
+    const y = snap.getCursorPoint()?.y ?? node.y;
+    // const point = new Point(x, y);
 
-    if (this.status === 'drawing' && this.currentBottomLine) {
-      x = this.currentBottomLine.getEndPoint().x;
-      y = this.currentBottomLine.getEndPoint().y;
-      this.onInflection();
-    }
+    // if (this.status === 'idle' && !this.isDrawablePoints(point)) {
+    //   message.error('只能从起点或者终点继续绘制');
+    //   return;
+    // } else if (this.status === 'drawing') {
+    //   if (this.isDrawablePoints(point)) {
+    //     message.success('节点绘制');
+    //   } else if (this.isDrawablePointsInEmptySpace(point)) {
+    //     message.success('空白处绘制');
+    //   } else {
+    //     message.error('不允许在此绘制');
+    //     return;
+    //   }
+    // } else if (this.status === 'done') {
+    //   message.error('绘制已完成');
+    //   return;
+    // }
 
     this.status = 'drawing';
+    this.createBottomLine(x, y);
+  }
+
+  createBottomLine(x: number, y: number) {
+    // 结束上一个底边绘制
+    if (this.currentBottomLine) {
+      this.currentBottomLine.finish();
+      return;
+    }
+
+    // 添加起点为吸附节点
+    Snap.points.push(new Point(x, y));
+
     this.currentBottomLine = new BottomLine({
       app: this.app,
       x,
       y,
       onFinish: () => {
         if (this.currentBottomLine) {
-          this.onStart(new UIEvent(this.currentBottomLine.getEndPoint()));
+          const point = this.currentBottomLine.getEndPoint();
+
+          // 添加终点为吸附节点
+          Snap.points.push(point);
+
+          // 记录当前底边，等待下一次绘制
+          this.bottomLines.push(this.currentBottomLine);
+          this.currentBottomLine = undefined;
+
+          // 创建下一个底边
+          if (this.status === 'drawing') {
+            this.createBottomLine(point.x, point.y);
+          }
         }
       },
     });
-    this.app.tree.add(this.currentBottomLine.line);
   }
 
   onMove(node: UIEvent) {
-    if (this.status === 'drawing' && this.currentBottomLine) {
-      this.currentBottomLine.drawing(node.x, node.y);
+    if (this.status === 'drawing') {
+      this.currentBottomLine?.drawing(node.x, node.y);
     }
   }
 
-  onInflection() {
+  onAbort() {
     this.status = 'idle';
-    this.currentBottomLine?.finish();
+    this.currentBottomLine?.abort();
+    this.currentBottomLine = undefined;
   }
 
   onEnd() {
-    this.status = 'idle';
-    this.currentBottomLine?.abort();
+    this.status = 'done';
+    this.currentBottomLine?.finish();
+    this.currentBottomLine = undefined;
+  }
+
+  undo() {
+    if (this.bottomLines.length === 0) return;
+
+    this.onAbort();
+
+    const lastBottomLine = this.bottomLines.pop();
+    lastBottomLine?.remove();
+
+    if (this.bottomLines.length === 0) {
+      this.reset();
+    }
+  }
+
+  reset() {
+    this.onAbort();
+
+    this.status = 'init';
+    this.bottomLines.forEach((line) => line.remove());
+    this.bottomLines = [];
+    this.currentBottomLine = undefined;
+    Snap.points = [];
   }
 }
 
-new DrawBottom(app);
-new Snap({ app });
+const drawBottom = new DrawBottom(app);
+const snap = new Snap({ app });
 </script>
