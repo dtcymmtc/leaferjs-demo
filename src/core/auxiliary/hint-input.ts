@@ -1,0 +1,83 @@
+import { Bounds, Line } from 'leafer-editor';
+import { getBoundsCenter } from '../helper';
+
+/** 提示输入框 */
+class HintInput {
+  input: HTMLInputElement = document.createElement('input');
+  timer: number | undefined = undefined;
+  autoFocus = false;
+  suffix: string | undefined;
+
+  constructor(options?: {
+    autoFocus?: boolean;
+    suffix?: string;
+    onChange?: (value: string) => void;
+  }) {
+    document.body.appendChild(this.input);
+
+    this.autoFocus = options?.autoFocus ?? false;
+    this.suffix = options?.suffix;
+    this.input.tabIndex = 1;
+    this.input.style.width = '50px';
+    this.input.style.display = 'none';
+    this.input.style.position = 'absolute';
+    this.input.style.transform = 'translate(-50%, -50%)';
+    this.input.style.border = '1px solid #000';
+    this.input.style.textAlign = 'center';
+    this.input.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        this.hide();
+        options?.onChange?.(this.input.value);
+      }
+    });
+  }
+
+  hide() {
+    this.input.style.display = 'none';
+
+    if (this.timer) {
+      clearTimeout(this.timer);
+    }
+
+    this.input.blur();
+  }
+
+  show(line: Line, num?: number | string) {
+    if (!num) {
+      this.hide();
+      return;
+    }
+
+    if (this.timer) {
+      clearTimeout(this.timer);
+    }
+    this.input.blur();
+
+    // 获取输入框的坐标
+    const center = getBoundsCenter(new Bounds(line.getBounds()));
+
+    this.input.style.display = 'block';
+    this.input.style.left = `${center.x}px`;
+    this.input.style.top = `${center.y}px`;
+
+    if (typeof num === 'string') {
+      this.input.value = `${num}${this.suffix ?? ''}`;
+    } else {
+      this.input.value = `${Math.ceil(num ?? 0)}${this.suffix ?? ''}`;
+    }
+
+    if (this.autoFocus) {
+      this.timer = setTimeout(() => {
+        this.input.focus();
+        this.input.select();
+      }, 400);
+    }
+  }
+
+  setOffset(x: number, y: number) {
+    this.input.style.marginTop = `${y}px`;
+    this.input.style.marginLeft = `${x}px`;
+  }
+}
+
+export { HintInput };
