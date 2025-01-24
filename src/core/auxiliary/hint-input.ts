@@ -1,7 +1,7 @@
 import { Bounds, Line } from 'leafer-editor';
 import { getBoundsCenter } from '../helper';
 
-/** 提示输入框 */
+/** 提示输入框类，用于显示和管理输入框 */
 class HintInput {
   input: HTMLInputElement = document.createElement('input');
   timer: number | undefined = undefined;
@@ -32,6 +32,7 @@ class HintInput {
     });
   }
 
+  /** 隐藏输入框 */
   hide() {
     this.input.style.display = 'none';
 
@@ -42,6 +43,11 @@ class HintInput {
     this.input.blur();
   }
 
+  /**
+   * 显示输入框
+   * @param line - 参考线条
+   * @param num - 显示的数值
+   */
   show(line: Line, num?: number | string) {
     if (!num) {
       this.hide();
@@ -74,6 +80,11 @@ class HintInput {
     }
   }
 
+  /**
+   * 设置输入框的偏移值
+   * @param x - 水平偏移值
+   * @param y - 垂直偏移值
+   */
   setOffset(x: number, y: number) {
     this.input.style.marginTop = `${y}px`;
     this.input.style.marginLeft = `${x}px`;

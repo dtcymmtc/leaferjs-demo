@@ -3,6 +3,7 @@ import { Line as LLine, Point as LPoint } from 'leafer-editor';
 import { round } from 'lodash-es';
 import { getLineEndPoint } from './common';
 
+/** 获取两条直线的交点 */
 export function getIntersection(line1: LLine, line2: LLine) {
   const s1 = new Segment(
     new Point(line1.x, line1.y),

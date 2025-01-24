@@ -1,6 +1,7 @@
 import { Bounds, Line, Point } from 'leafer-editor';
 import { round } from 'lodash-es';
 
+/** 获取矩形的中心 */
 export const getBoundsCenter = (bounds: Bounds) => {
   return new Point(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
 };
@@ -73,6 +74,7 @@ export const getLineEndPoint = (line: Line) => {
   return new Point(round(x2), round(y2));
 };
 
+/** 计算两条线段之间的夹角 */
 export const getAngleBetweenLines = (line1: Line, line2: Line) => {
   const line1End = getLineEndPoint(line1);
   const line2End = getLineEndPoint(line2);

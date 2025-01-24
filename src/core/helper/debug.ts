@@ -7,6 +7,7 @@ class Debug {
     this.element = document.createElement('div');
     this.element.id = 'debug';
     document.body.appendChild(this.element);
+    this.element.style.display = 'none';
     this.element.style.position = 'absolute';
     this.element.style.top = '0';
     this.element.style.left = '0';

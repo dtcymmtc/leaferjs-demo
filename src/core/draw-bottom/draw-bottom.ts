@@ -4,7 +4,9 @@ import { BasicDraw, type BasicDrawOptions } from './basic-draw';
 import { BottomLine } from './bottom-line';
 import { BottomLineGroup } from './bottom-line-group';
 
-/* 绘制腔底 */
+/**
+ * 用于绘制腔底
+ */
 class DrawBottom extends BasicDraw {
   currentBottomLine: BottomLine | undefined = undefined;
   status: 'init' | 'idle' | 'drawing' | 'done' = 'init';
@@ -17,6 +19,10 @@ class DrawBottom extends BasicDraw {
       app: this.app,
       snap: this.snap,
       debug: this.debug,
+      onClosed: () => {
+        this.status = 'done';
+        message.success('绘制完成');
+      },
     });
 
     this.onStart = this.onStart.bind(this);
@@ -30,6 +36,9 @@ class DrawBottom extends BasicDraw {
     this.app.on(PointerEvent.MENU, this.onAbort);
   }
 
+  /**
+   * 开始绘制事件处理
+   */
   onStart() {
     const point = this.snap.getCursorPoint();
 
@@ -56,6 +65,10 @@ class DrawBottom extends BasicDraw {
     this.createBottomLine(point);
   }
 
+  /**
+   * 创建底边线
+   * @param point - 起点
+   */
   createBottomLine(point: Point) {
     // 结束上一个底边绘制
     if (this.currentBottomLine) {
@@ -81,19 +94,14 @@ class DrawBottom extends BasicDraw {
           if (this.status === 'drawing') {
             this.createBottomLine(point);
           }
-
-          console.log(this.bottomLineGroup);
-          if (this.bottomLineGroup.drawablePoints.length === 0 && this.currentBottomLine) {
-            this.onAbort();
-            this.status = 'done';
-
-            message.success('绘制完成');
-          }
         }
       },
     });
   }
 
+  /**
+   * 鼠标移动事件处理
+   */
   onMove() {
     const point = this.snap.getCursorPoint();
 
@@ -102,18 +110,27 @@ class DrawBottom extends BasicDraw {
     }
   }
 
+  /**
+   * 终止绘制事件处理
+   */
   onAbort() {
     this.status = 'idle';
     this.currentBottomLine?.abort();
     this.currentBottomLine = undefined;
   }
 
+  /**
+   * 结束绘制事件处理
+   */
   onEnd() {
     this.status = 'done';
     this.currentBottomLine?.finish();
     this.currentBottomLine = undefined;
   }
 
+  /**
+   * 撤销最后一次绘制
+   */
   undo() {
     if (this.bottomLineGroup.bottomLines.length === 0) return;
 
@@ -123,6 +140,9 @@ class DrawBottom extends BasicDraw {
     if (this.bottomLineGroup.bottomLines.length === 0) this.reset();
   }
 
+  /**
+   * 重置绘制状态
+   */
   reset() {
     this.onAbort();
 

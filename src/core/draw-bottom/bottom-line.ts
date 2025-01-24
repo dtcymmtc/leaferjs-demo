@@ -12,7 +12,7 @@ interface BottomLineOptions extends BasicDrawOptions {
   onChange?: () => void;
 }
 
-/** 底边 */
+/** 底边类，用于绘制和管理底边线 */
 class BottomLine extends BasicDraw {
   private line: Line;
   defaultColor = 'rgb(192,210,237)';
@@ -31,6 +31,8 @@ class BottomLine extends BasicDraw {
     this.start = options.start;
     this.drawBottom = options.drawBottom;
     this.finishCallback = options.onFinish;
+
+    // 初始化线条对象
     this.line = new Line({
       width: 0,
       strokeWidth: 16,
@@ -40,6 +42,7 @@ class BottomLine extends BasicDraw {
       className: BottomLineStatus.Idle,
     });
 
+    // 初始化提示输入框
     this.hintInput = new HintInput({
       autoFocus: true,
       onChange: (value) => {
@@ -51,12 +54,14 @@ class BottomLine extends BasicDraw {
       },
     });
 
+    // 初始化角度辅助线
     this.angleAuxiliaryLine = new AngleAuxiliaryLine({
       app: this.app,
       x: this.start.x,
       y: this.start.y,
     });
 
+    // 监听线条属性变化事件
     this.line.on(PropertyEvent.CHANGE, (e) => {
       if (!['rotation', 'width'].includes(e.attrName)) return;
 
@@ -65,17 +70,18 @@ class BottomLine extends BasicDraw {
 
       // 更新辅助线信息
       this.angleAuxiliaryLine.show(this.line);
-      this.line.rotation;
 
+      // 检测是否与其他底边碰撞
       this.hit = this.isHit(this);
 
       options.onChange?.();
     });
 
+    // 将线条添加到应用的树结构中
     this.app.tree.add(this.line);
   }
 
-  /** 是否与其他底边碰撞 */
+  /** 判断当前线条是否与其他底边碰撞 */
   isHit(line: BottomLine): boolean {
     let result = false;
     for (const otherLine of this.drawBottom.bottomLineGroup.bottomLines) {
@@ -97,22 +103,27 @@ class BottomLine extends BasicDraw {
     return result;
   }
 
+  /** 获取线条对象 */
   getLine() {
     return this.line;
   }
 
+  /** 获取线条起点 */
   getStartPoint() {
     return new Point(this.line.x, this.line.y);
   }
 
+  /** 获取线条终点 */
   getEndPoint() {
     return getLineEndPoint(this.line);
   }
 
+  /** 获取线条边界 */
   getBounds() {
     return new Bounds(this.line.getBounds());
   }
 
+  /** 绘制线条 */
   drawing(point: Point) {
     this.line.set({
       // 需要减去起点坐标
@@ -157,7 +168,7 @@ class BottomLine extends BasicDraw {
     this.angleAuxiliaryLine.remove();
   }
 
-  /** 移除 */
+  /** 移除线条 */
   remove() {
     this.line?.remove();
   }
