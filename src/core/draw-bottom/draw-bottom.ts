@@ -1,6 +1,5 @@
 import { message } from 'ant-design-vue';
-import { Point, PointerEvent, UIEvent } from 'leafer-editor';
-import { Snap } from '../snap';
+import { Point, PointerEvent } from 'leafer-editor';
 import { BasicDraw, type BasicDrawOptions } from './basic-draw';
 import { BottomLine } from './bottom-line';
 import { BottomLineGroup } from './bottom-line-group';
@@ -31,12 +30,12 @@ class DrawBottom extends BasicDraw {
     this.app.on(PointerEvent.MENU, this.onAbort);
   }
 
-  onStart(node: UIEvent) {
-    const x = this.snap.getCursorPoint()?.x ?? node.x;
-    const y = this.snap.getCursorPoint()?.y ?? node.y;
+  onStart() {
+    const point = this.snap.getCursorPoint();
 
-    console.log(Snap.points, this.snap.getCursorPoint());
-    const point = new Point(x, y);
+    if (this.status === 'init') {
+      this.snap.addTargetPoint(point);
+    }
 
     if (this.status === 'done') {
       message.error('绘制已完成');
@@ -54,32 +53,25 @@ class DrawBottom extends BasicDraw {
     }
 
     this.status = 'drawing';
-    this.createBottomLine(x, y);
+    this.createBottomLine(point);
   }
 
-  createBottomLine(x: number, y: number) {
+  createBottomLine(point: Point) {
     // 结束上一个底边绘制
     if (this.currentBottomLine) {
       this.currentBottomLine.finish();
       return;
     }
 
-    // 添加起点为吸附节点
-    Snap.points.push(new Point(x, y));
-
     this.currentBottomLine = new BottomLine({
       app: this.app,
       snap: this.snap,
       debug: this.debug,
       drawBottom: this,
-      x,
-      y,
+      start: point,
       onFinish: () => {
         if (this.currentBottomLine) {
           const point = this.currentBottomLine.getEndPoint();
-
-          // 添加终点为吸附节点
-          Snap.points.push(point);
 
           // 记录当前底边，等待下一次绘制
           this.bottomLineGroup.push(this.currentBottomLine);
@@ -87,7 +79,7 @@ class DrawBottom extends BasicDraw {
 
           // 创建下一个底边
           if (this.status === 'drawing') {
-            this.createBottomLine(point.x, point.y);
+            this.createBottomLine(point);
           }
 
           console.log(this.bottomLineGroup);
@@ -102,12 +94,11 @@ class DrawBottom extends BasicDraw {
     });
   }
 
-  onMove(node: UIEvent) {
-    const x = this.snap.getCursorPoint()?.x ?? node.x;
-    const y = this.snap.getCursorPoint()?.y ?? node.y;
+  onMove() {
+    const point = this.snap.getCursorPoint();
 
     if (this.status === 'drawing') {
-      this.currentBottomLine?.drawing(x, y);
+      this.currentBottomLine?.drawing(point);
     }
   }
 
@@ -138,7 +129,6 @@ class DrawBottom extends BasicDraw {
     this.status = 'init';
     this.currentBottomLine = undefined;
     this.bottomLineGroup.clear();
-    Snap.points = [];
     this.debug.clear();
   }
 }

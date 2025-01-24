@@ -7,8 +7,7 @@ import { DrawBottom } from './draw-bottom';
 
 interface BottomLineOptions extends BasicDrawOptions {
   drawBottom: DrawBottom;
-  x: number;
-  y: number;
+  start: Point;
   onFinish?: () => void;
   onChange?: () => void;
 }
@@ -23,22 +22,20 @@ class BottomLine extends BasicDraw {
   angleAuxiliaryLine: AngleAuxiliaryLine;
   hit: boolean = false;
   finishCallback: (() => void) | undefined;
-  x: number;
-  y: number;
+  start: Point;
   drawBottom: DrawBottom;
 
   constructor(options: BottomLineOptions) {
     super(options);
 
-    this.x = options.x;
-    this.y = options.y;
+    this.start = options.start;
     this.drawBottom = options.drawBottom;
     this.finishCallback = options.onFinish;
     this.line = new Line({
       width: 0,
       strokeWidth: 16,
-      x: options.x,
-      y: options.y,
+      x: this.start.x,
+      y: this.start.y,
       stroke: this.defaultColor,
       className: BottomLineStatus.Idle,
     });
@@ -56,12 +53,12 @@ class BottomLine extends BasicDraw {
 
     this.angleAuxiliaryLine = new AngleAuxiliaryLine({
       app: this.app,
-      x: options.x,
-      y: options.y,
+      x: this.start.x,
+      y: this.start.y,
     });
 
     this.line.on(PropertyEvent.CHANGE, (e) => {
-      if (!['rotation'].includes(e.attrName)) return;
+      if (!['rotation', 'width'].includes(e.attrName)) return;
 
       // 更新输入框信息
       this.hintInput.show(this.line, this.line.width);
@@ -116,12 +113,12 @@ class BottomLine extends BasicDraw {
     return new Bounds(this.line.getBounds());
   }
 
-  drawing(x: number, y: number) {
+  drawing(point: Point) {
     this.line.set({
       // 需要减去起点坐标
       toPoint: {
-        x: x - (this.line.x ?? 0),
-        y: y - (this.line.y ?? 0),
+        x: point.x - (this.line.x ?? 0),
+        y: point.y - (this.line.y ?? 0),
       },
       className: BottomLineStatus.Drawing,
       stroke: this.hit ? this.hitColor : this.defaultColor,

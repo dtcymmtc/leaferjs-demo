@@ -48,6 +48,9 @@ class BottomLineGroup extends BasicDraw {
     });
     this.linkPoints = [];
 
+    // 清空吸附点
+    this.snap.clearTargetPoints();
+
     for (const [key, count] of pointCount.entries()) {
       const [x, y] = key.split(',').map(Number);
 
@@ -58,8 +61,11 @@ class BottomLineGroup extends BasicDraw {
         height: 16,
         offsetX: -8,
         offsetY: -8,
+        zIndex: 1,
       });
-      this.app.tree.add(ui);
+
+      this.app.sky.add(ui);
+      this.snap.addTargetPoint(new Point(x, y));
 
       if (count === 1) {
         ui.set({ fill: 'blue' });
