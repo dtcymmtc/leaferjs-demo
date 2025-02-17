@@ -7,9 +7,9 @@ class AngleAuxiliaryLine {
   app: App;
   line: Line;
   curve: Line;
-  hintInput: HintInput;
+  hintInput: HintInput | undefined;
   suffix: string | undefined;
-  defaultColor = 'rgb(116,116,116)';
+  defaultColor = 'rgb(153,153,153)';
   parallelColor = 'rgb(22,217,168)';
 
   constructor(options: { app: App; x: number; y: number }) {
@@ -99,13 +99,13 @@ class AngleAuxiliaryLine {
     });
 
     // 显示提示输入框，显示线条之间的夹角
-    this.hintInput.show(this.curve, getAngleBetweenLines(line, this.line));
+    this.hintInput?.show(this.curve, getAngleBetweenLines(line, this.line));
 
     // 设置输入框的偏移值
     if (direction.includes('right')) {
-      this.hintInput.setOffset(40, 0);
+      this.hintInput?.setOffset(40, 0);
     } else if (direction.includes('left')) {
-      this.hintInput.setOffset(-40, 0);
+      this.hintInput?.setOffset(-40, 0);
     }
   }
 
@@ -113,7 +113,7 @@ class AngleAuxiliaryLine {
   remove() {
     this.line?.remove();
     this.curve?.remove();
-    this.hintInput.hide();
+    this.hintInput?.hide();
   }
 }
 

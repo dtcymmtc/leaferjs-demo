@@ -47,8 +47,9 @@ class HintInput {
    * 显示输入框
    * @param line - 参考线条
    * @param num - 显示的数值
+   * @param disabled - 是否禁用输入框
    */
-  show(line: Line, num?: number | string) {
+  show(line: Line, num?: number | string, disabled = false) {
     if (!num) {
       this.hide();
       return;
@@ -65,6 +66,7 @@ class HintInput {
     this.input.style.display = 'block';
     this.input.style.left = `${center.x}px`;
     this.input.style.top = `${center.y}px`;
+    this.input.disabled = disabled;
 
     if (typeof num === 'string') {
       this.input.value = `${num}${this.suffix ?? ''}`;
@@ -74,6 +76,7 @@ class HintInput {
 
     if (this.autoFocus) {
       this.timer = setTimeout(() => {
+        if (this.input.disabled) return;
         this.input.focus();
         this.input.select();
       }, 400);
