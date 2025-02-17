@@ -1,6 +1,6 @@
 import { Bounds, Line, Point, PropertyEvent } from 'leafer-editor';
 import { AngleAuxiliaryLine, HintInput } from '../auxiliary';
-import { BottomLineStatus } from '../constants';
+import { BottomLineStatus, DEFAULT_BOTTOM_LINE_WIDTH } from '../constants';
 import { getIntersection, getLineEndPoint } from '../helper';
 import { BasicDraw, type BasicDrawOptions } from './basic-draw';
 import { DrawBottom } from './draw-bottom';
@@ -15,9 +15,10 @@ interface BottomLineOptions extends BasicDrawOptions {
 /** 底边类，用于绘制和管理底边线 */
 class BottomLine extends BasicDraw {
   private line: Line;
-  defaultColor = 'rgb(192,210,237)';
-  hitColor = 'rgb(255, 0, 0)';
-  finishColor = 'rgb(166, 166, 166)';
+  defaultColor = 'rgb(150,197,250)';
+  hitColor = 'rgb(255,0,0)';
+  finishColor = 'rgb(140,140,140)';
+  selectedColor = 'rgb(110,170,250)';
   hintInput: HintInput;
   angleAuxiliaryLine: AngleAuxiliaryLine;
   hit: boolean = false;
@@ -35,7 +36,7 @@ class BottomLine extends BasicDraw {
     // 初始化线条对象
     this.line = new Line({
       width: 0,
-      strokeWidth: 16,
+      strokeWidth: DEFAULT_BOTTOM_LINE_WIDTH,
       x: this.start.x,
       y: this.start.y,
       stroke: this.defaultColor,
@@ -171,6 +172,25 @@ class BottomLine extends BasicDraw {
   /** 移除线条 */
   remove() {
     this.line?.remove();
+  }
+
+  /* 选中 */
+  select() {
+    this.line.set({
+      stroke: this.selectedColor,
+    });
+  }
+
+  /** 取消选中 */
+  unselect() {
+    this.line.set({
+      stroke: this.finishColor,
+    });
+  }
+
+  /** 闭合 */
+  close() {
+    this.hintInput.show(this.line, this.line.width, true);
   }
 }
 

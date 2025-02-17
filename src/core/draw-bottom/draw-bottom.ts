@@ -42,13 +42,13 @@ class DrawBottom extends BasicDraw {
   onStart() {
     const point = this.snap.getCursorPoint();
 
-    if (this.status === 'init') {
-      this.snap.addTargetPoint(point);
-    }
-
     if (this.status === 'done') {
       message.error('绘制已完成');
       return;
+    }
+
+    if (this.status === 'init') {
+      this.snap.addTargetPoint(point);
     }
 
     if (this.status === 'idle' && !this.bottomLineGroup.isDrawablePoint(point)) {

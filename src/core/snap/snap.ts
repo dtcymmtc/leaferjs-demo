@@ -1,5 +1,7 @@
 import { App, Ellipse, Point, PointerEvent, UIEvent } from 'leafer-editor';
+import { round } from 'lodash-es';
 import { LineAuxiliaryLine } from '../auxiliary';
+import { DEFAULT_BOTTOM_LINE_WIDTH } from '../constants';
 
 /** 获取吸附点 */
 export function snapToPoints(mousePos: Point, points: Point[], threshold = 10) {
@@ -102,10 +104,10 @@ class Snap {
 
     // 创建鼠标指针
     this.cursor = new Ellipse({
-      width: 16,
-      height: 16,
-      offsetX: -8,
-      offsetY: -8,
+      width: DEFAULT_BOTTOM_LINE_WIDTH,
+      height: DEFAULT_BOTTOM_LINE_WIDTH,
+      offsetX: (DEFAULT_BOTTOM_LINE_WIDTH / 2) * -1,
+      offsetY: (DEFAULT_BOTTOM_LINE_WIDTH / 2) * -1,
       strokeWidth: 1,
       stroke: 'rgb(255, 0, 0)',
       fill: 'rgb(255, 255, 255)',
@@ -118,8 +120,10 @@ class Snap {
 
     // 监听鼠标移动事件
     this.app.on(PointerEvent.MOVE, (event: UIEvent) => {
-      event.target;
-      const { snapPoint, targets } = snapToPoints(new Point(event.x, event.y), this.targetPoints);
+      const x = round(event.x);
+      const y = round(event.y);
+
+      const { snapPoint, targets } = snapToPoints(new Point(x, y), this.targetPoints);
 
       // 清空辅助线
       this.lineAuxiliaryLine.forEach((line) => line.remove());
@@ -139,8 +143,8 @@ class Snap {
         });
       } else {
         this.cursor?.set({
-          x: event.x,
-          y: event.y,
+          x,
+          y,
           visible: false,
         });
       }

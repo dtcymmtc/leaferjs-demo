@@ -1,10 +1,15 @@
-import { Ellipse, Point, UI } from 'leafer-editor';
+import { Ellipse, Point, PointerEvent, Polygon, UI, UIEvent } from 'leafer-editor';
+import { DEFAULT_BOTTOM_LINE_WIDTH } from '../constants';
 import { BasicDraw, type BasicDrawOptions } from './basic-draw';
 import { BottomLine } from './bottom-line';
 
 interface BottomLineGroupOptions extends BasicDrawOptions {
   onClosed?: () => void;
 }
+
+const getKey = (p: Point): string => {
+  return `${p.x},${p.y}`;
+};
 
 /**
  * 用于管理一组底边线
@@ -19,10 +24,30 @@ class BottomLineGroup extends BasicDraw {
   closed = false;
   /** 闭合回调函数 */
   closedCallback: (() => void) | undefined;
+  /** 闭合区域 */
+  closedPolygon = new Polygon({
+    points: [],
+    fill: 'rgba(255, 224, 178, 1)',
+    visible: false,
+  });
 
   constructor(options: BottomLineGroupOptions) {
     super(options);
     this.closedCallback = options.onClosed;
+
+    this.app.on(PointerEvent.MOVE, (e: UIEvent) => {
+      if (!this.closed) return;
+
+      this.bottomLines.forEach((bottomLine) => {
+        if (bottomLine.getLine().innerId === e.target.innerId) {
+          bottomLine.select();
+        } else {
+          bottomLine.unselect();
+        }
+      });
+    });
+
+    this.app.tree.add(this.closedPolygon);
   }
 
   /**
@@ -37,6 +62,52 @@ class BottomLineGroup extends BasicDraw {
     });
   }
 
+  /**  */
+  sortPolygonPoints(): Point[] {
+    // 构建邻接表
+    const adjacency = new Map<string, Point[]>();
+
+    const addEdge = (a: Point, b: Point) => {
+      const keyA = getKey(a);
+      if (!adjacency.has(keyA)) adjacency.set(keyA, []);
+      adjacency.get(keyA)!.push(b);
+
+      const keyB = getKey(b);
+      if (!adjacency.has(keyB)) adjacency.set(keyB, []);
+      adjacency.get(keyB)!.push(a);
+    };
+
+    this.bottomLines.forEach((item) => {
+      addEdge(item.getStartPoint(), item.getEndPoint());
+    });
+
+    // 初始化遍历
+    const startPoint = this.bottomLines[0].getStartPoint();
+    const path: Point[] = [startPoint];
+    let currentPoint = startPoint;
+    let previousPoint: Point | null = null;
+
+    do {
+      const currentKey = getKey(currentPoint);
+      const neighbors = adjacency.get(currentKey) || [];
+
+      // 找到下一个点（排除来源点）
+      const next = neighbors.find((p) => !previousPoint || getKey(p) !== getKey(previousPoint));
+
+      if (!next) {
+        throw new Error('无法找到闭合路径');
+      }
+
+      // 更新路径和指针
+      path.push(next);
+      previousPoint = currentPoint;
+      currentPoint = next;
+    } while (getKey(currentPoint) !== getKey(startPoint));
+
+    // 移除最后一个重复的起点（闭合点）
+    return path.slice(0, -1);
+  }
+
   /**
    * 更新可绘制点和连接点
    */
@@ -47,8 +118,8 @@ class BottomLineGroup extends BasicDraw {
     for (const line of this.bottomLines) {
       const start = line.getStartPoint();
       const end = line.getEndPoint();
-      const startKey = `${start.x},${start.y}`;
-      const endKey = `${end.x},${end.y}`;
+      const startKey = getKey(start);
+      const endKey = getKey(end);
 
       pointCount.set(startKey, (pointCount.get(startKey) || 0) + 1);
       pointCount.set(endKey, (pointCount.get(endKey) || 0) + 1);
@@ -76,10 +147,10 @@ class BottomLineGroup extends BasicDraw {
       const ui = new Ellipse({
         x,
         y,
-        width: 16,
-        height: 16,
-        offsetX: -8,
-        offsetY: -8,
+        width: DEFAULT_BOTTOM_LINE_WIDTH,
+        height: DEFAULT_BOTTOM_LINE_WIDTH,
+        offsetX: (DEFAULT_BOTTOM_LINE_WIDTH / 2) * -1,
+        offsetY: (DEFAULT_BOTTOM_LINE_WIDTH / 2) * -1,
         zIndex: 1,
       });
 
@@ -99,9 +170,7 @@ class BottomLineGroup extends BasicDraw {
 
     // 如果所有底边线都已绘制且没有可绘制点，则标记为闭合
     if (this.bottomLines.length > 0 && this.drawablePoints.length === 0) {
-      this.closed = true;
-      this.snap.clearTargetPoints();
-      this.closedCallback?.();
+      this.close();
     }
   }
 
@@ -135,6 +204,25 @@ class BottomLineGroup extends BasicDraw {
     this.linkPoints = [];
 
     this.update();
+  }
+
+  /**
+   * 获取所有底边线的点
+   * @returns 返回所有底边线的点
+   */
+  close() {
+    this.closed = true;
+    this.snap.clearTargetPoints();
+    this.bottomLines.forEach((bottomLine) => {
+      bottomLine.close();
+    });
+
+    this.closedPolygon.set({
+      points: this.sortPolygonPoints(),
+      visible: true,
+    });
+
+    this.closedCallback?.();
   }
 }
 

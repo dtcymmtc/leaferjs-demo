@@ -1,3 +1,5 @@
+export const DEFAULT_BOTTOM_LINE_WIDTH = 10;
+
 export enum BottomLineStatus {
   Idle = 'BottomLineIdle',
   Drawing = 'BottomLineDrawing',
