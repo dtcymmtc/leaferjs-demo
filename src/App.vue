@@ -21,6 +21,10 @@ const app = new App({
   move: {
     drag: 'auto',
   },
+  zoom: {
+    min: 0.125,
+    max: 4,
+  },
 });
 
 // 创建点阵实例
