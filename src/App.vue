@@ -15,6 +15,12 @@ import { Debug, DrawBottom, Snap } from './core';
 const app = new App({
   view: window,
   editor: {}, // 会自动创建 editor实例、tree层、sky层
+  wheel: {
+    zoomMode: true,
+  },
+  move: {
+    drag: 'auto',
+  },
 });
 
 // 创建点阵实例

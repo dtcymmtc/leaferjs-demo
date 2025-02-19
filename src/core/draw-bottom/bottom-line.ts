@@ -16,7 +16,7 @@ interface BottomLineOptions extends BasicDrawOptions {
 class BottomLine extends BasicDraw {
   private line: Line;
   defaultColor = 'rgb(150,197,250)';
-  hitColor = 'rgb(225,33,18)';
+  hitColor = 'rgb(225,33,0)';
   finishColor = 'rgb(140,140,140)';
   selectedColor = 'rgb(110,170,250)';
   hintInput: HintInput;
@@ -171,6 +171,8 @@ class BottomLine extends BasicDraw {
 
   /** 移除线条 */
   remove() {
+    this.hintInput.hide();
+    this.angleAuxiliaryLine.remove();
     this.line?.remove();
   }
 
@@ -191,6 +193,11 @@ class BottomLine extends BasicDraw {
   /** 闭合 */
   close() {
     this.hintInput.show(this.line, this.line.width, true);
+  }
+
+  /** 开放 */
+  open() {
+    this.hintInput.hide();
   }
 }
 

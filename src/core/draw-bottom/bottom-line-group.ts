@@ -163,7 +163,7 @@ class BottomLineGroup extends BasicDraw {
       }
 
       if (count === 2) {
-        ui.set({ fill: 'rgb(166, 166, 166)' });
+        ui.set({ fill: 'rgb(140,140,140)' });
         this.linkPoints.push(ui);
       }
     }
@@ -171,6 +171,8 @@ class BottomLineGroup extends BasicDraw {
     // 如果所有底边线都已绘制且没有可绘制点，则标记为闭合
     if (this.bottomLines.length > 0 && this.drawablePoints.length === 0) {
       this.close();
+    } else {
+      this.open();
     }
   }
 
@@ -206,10 +208,7 @@ class BottomLineGroup extends BasicDraw {
     this.update();
   }
 
-  /**
-   * 获取所有底边线的点
-   * @returns 返回所有底边线的点
-   */
+  /** 图形闭合 */
   close() {
     this.closed = true;
     this.snap.clearTargetPoints();
@@ -223,6 +222,17 @@ class BottomLineGroup extends BasicDraw {
     });
 
     this.closedCallback?.();
+  }
+
+  /** 图形开放 */
+  open() {
+    this.closed = false;
+
+    this.bottomLines.forEach((bottomLine) => {
+      bottomLine.open();
+    });
+
+    this.closedPolygon.set({ points: [], visible: false });
   }
 }
 

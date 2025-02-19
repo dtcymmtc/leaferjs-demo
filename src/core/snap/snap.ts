@@ -120,8 +120,8 @@ class Snap {
 
     // 监听鼠标移动事件
     this.app.on(PointerEvent.MOVE, (event: UIEvent) => {
-      const x = round(event.x);
-      const y = round(event.y);
+      const x = round(event.getPagePoint().x);
+      const y = round(event.getPagePoint().y);
 
       const { snapPoint, targets } = snapToPoints(new Point(x, y), this.targetPoints);
 
