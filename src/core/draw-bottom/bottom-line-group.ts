@@ -62,7 +62,7 @@ class BottomLineGroup extends BasicDraw {
     });
   }
 
-  /**  */
+  /** 获取可以生成矩形的顶点并排序  */
   sortPolygonPoints(): Point[] {
     // 构建邻接表
     const adjacency = new Map<string, Point[]>();

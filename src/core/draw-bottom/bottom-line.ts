@@ -16,7 +16,7 @@ interface BottomLineOptions extends BasicDrawOptions {
 class BottomLine extends BasicDraw {
   private line: Line;
   defaultColor = 'rgb(150,197,250)';
-  hitColor = 'rgb(255,0,0)';
+  hitColor = 'rgb(225,33,18)';
   finishColor = 'rgb(140,140,140)';
   selectedColor = 'rgb(110,170,250)';
   hintInput: HintInput;
