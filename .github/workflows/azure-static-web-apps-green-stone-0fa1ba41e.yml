@@ -19,38 +19,19 @@ jobs:
         with:
           submodules: true
           lfs: false
-
-      - name: 设置Node.js环境
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-          package-manager: 'pnpm@8'
-
-      - name: 获取pnpm存储路径
-        id: pnpm-store
-        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
-
-      - uses: actions/cache@v3
-        name: 缓存pnpm store
-        with:
-          path: ${{ steps.pnpm-store.outputs.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - name: 安装依赖
-        run: pnpm install --frozen-lockfile
-
-      - name: 构建项目
-        run: pnpm build
-
-      - name: 部署到Azure
+      - name: Build And Deploy
+        id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_GREEN_STONE_0FA1BA41E }}
           repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for Github integrations (i.e. PR comments)
+          action: 'upload'
+          ###### Repository/Build Configurations - These values can be configured to match your app requirements. ######
+          # For more information regarding Static Web App workflow configurations, please visit: https://aka.ms/swaworkflowconfig
           app_location: '/' # App source code path
+          api_location: 'api' # Api source code path - optional
           output_location: 'dist' # Built app content directory - optional
+          ###### End of Repository/Build Configurations ######
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
