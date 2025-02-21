@@ -30,6 +30,8 @@ class DrawBottom extends BasicDraw {
     this.onAbort = this.onAbort.bind(this);
     this.reset = this.reset.bind(this);
     this.undo = this.undo.bind(this);
+    this.exportData = this.exportData.bind(this);
+    this.importData = this.importData.bind(this);
 
     this.app.on(PointerEvent.CLICK, this.onStart);
     this.app.on(PointerEvent.MOVE, this.onMove);
@@ -150,6 +152,34 @@ class DrawBottom extends BasicDraw {
     this.currentBottomLine = undefined;
     this.bottomLineGroup.clear();
     this.debug.clear();
+  }
+
+  /**
+   * 导出数据
+   */
+  exportData() {
+    const result = this.bottomLineGroup.sortPolygonPoints().map((point) => {
+      return {
+        x: point.x,
+        y: point.y,
+      };
+    });
+    console.log('【数据导出】', result);
+    return result;
+  }
+
+  /**
+   * 导入
+   */
+  importData(data: { x: number; y: number }[]) {
+    this.reset();
+    data.forEach((statPoint, index) => {
+      const endPoint = new Point(data[index + 1 === data.length ? 0 : index + 1]);
+
+      this.createBottomLine(new Point(statPoint));
+      this.currentBottomLine?.drawing(endPoint);
+      this.currentBottomLine?.finish();
+    });
   }
 }
 

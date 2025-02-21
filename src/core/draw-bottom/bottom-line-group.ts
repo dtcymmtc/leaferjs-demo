@@ -2,6 +2,7 @@ import { Ellipse, Point, PointerEvent, Polygon, UI, UIEvent } from 'leafer-edito
 import { DEFAULT_BOTTOM_LINE_WIDTH } from '../constants';
 import { BasicDraw, type BasicDrawOptions } from './basic-draw';
 import { BottomLine } from './bottom-line';
+import { EdgeAnnotations } from './edge-annotations';
 
 interface BottomLineGroupOptions extends BasicDrawOptions {
   onClosed?: () => void;
@@ -20,6 +21,8 @@ class BottomLineGroup extends BasicDraw {
   drawablePoints: UI[] = [];
   /** 连接点 */
   linkPoints: UI[] = [];
+  /** 边标注 */
+  edgeAnnotations: EdgeAnnotations | undefined = undefined;
   /** 是否闭合 */
   closed = false;
   /** 闭合回调函数 */
@@ -169,6 +172,7 @@ class BottomLineGroup extends BasicDraw {
     }
 
     // 如果所有底边线都已绘制且没有可绘制点，则标记为闭合
+    this.edgeAnnotations?.clear();
     if (this.bottomLines.length > 0 && this.drawablePoints.length === 0) {
       this.close();
     } else {
@@ -210,15 +214,19 @@ class BottomLineGroup extends BasicDraw {
 
   /** 图形闭合 */
   close() {
+    const polygonPoints = this.sortPolygonPoints();
     this.closed = true;
     this.snap.clearTargetPoints();
-    this.bottomLines.forEach((bottomLine) => {
-      bottomLine.close();
+    this.closedPolygon.set({
+      points: polygonPoints,
+      visible: true,
     });
 
-    this.closedPolygon.set({
-      points: this.sortPolygonPoints(),
-      visible: true,
+    this.edgeAnnotations = new EdgeAnnotations({
+      points: polygonPoints,
+      app: this.app,
+      snap: this.snap,
+      debug: this.debug,
     });
 
     this.closedCallback?.();
@@ -227,11 +235,6 @@ class BottomLineGroup extends BasicDraw {
   /** 图形开放 */
   open() {
     this.closed = false;
-
-    this.bottomLines.forEach((bottomLine) => {
-      bottomLine.open();
-    });
-
     this.closedPolygon.set({ points: [], visible: false });
   }
 }
