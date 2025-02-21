@@ -1,5 +1,6 @@
 import { Bounds, Line, Point } from 'leafer-editor';
 import { round } from 'lodash-es';
+import { DEFAULT_ZOOM_SCALE } from '../constants';
 
 /** 获取矩形的中心 */
 export const getBoundsCenter = (bounds: Bounds) => {
@@ -89,3 +90,31 @@ export const getAngleBetweenLines = (line1: Line, line2: Line) => {
   const angle = Math.acos(cosTheta) * (180 / Math.PI); // 将弧度转换为角度
   return angle;
 };
+
+/** 尺寸转换 */
+export const convertSize = (length: number) => {
+  return length / DEFAULT_ZOOM_SCALE;
+};
+
+/** 获取多边形的质心 */
+export function getPolygonCentroid(points: Point[]): Point {
+  let area = 0;
+  let cx = 0;
+  let cy = 0;
+
+  for (let i = 0; i < points.length; i++) {
+    const j = (i + 1) % points.length;
+    const cross = points[i].x * points[j].y - points[j].x * points[i].y;
+    area += cross;
+    cx += (points[i].x + points[j].x) * cross;
+    cy += (points[i].y + points[j].y) * cross;
+  }
+
+  area /= 2; // 多边形的带符号面积
+  const factor = 1 / (6 * area);
+
+  return new Point({
+    x: cx * factor,
+    y: cy * factor,
+  });
+}

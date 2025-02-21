@@ -2,9 +2,12 @@ import { App, Ellipse, Point, PointerEvent, UIEvent } from 'leafer-editor';
 import { round } from 'lodash-es';
 import { LineAuxiliaryLine } from '../auxiliary';
 import { DEFAULT_BOTTOM_LINE_WIDTH } from '../constants';
+import { convertSize } from '../helper';
+
+const threshold = convertSize(10);
 
 /** 获取吸附点 */
-export function snapToPoints(mousePos: Point, points: Point[], threshold = 10) {
+export function snapToPoints(mousePos: Point, points: Point[]) {
   // 存储不同类型的吸附点
   const horizontalTargets: Point[] = []; // 水平吸附点
   const verticalTargets: Point[] = []; // 垂直吸附点
@@ -104,11 +107,11 @@ class Snap {
 
     // 创建鼠标指针
     this.cursor = new Ellipse({
-      width: DEFAULT_BOTTOM_LINE_WIDTH,
-      height: DEFAULT_BOTTOM_LINE_WIDTH,
-      offsetX: (DEFAULT_BOTTOM_LINE_WIDTH / 2) * -1,
-      offsetY: (DEFAULT_BOTTOM_LINE_WIDTH / 2) * -1,
-      strokeWidth: 1,
+      width: convertSize(DEFAULT_BOTTOM_LINE_WIDTH),
+      height: convertSize(DEFAULT_BOTTOM_LINE_WIDTH),
+      offsetX: (convertSize(DEFAULT_BOTTOM_LINE_WIDTH) / 2) * -1,
+      offsetY: (convertSize(DEFAULT_BOTTOM_LINE_WIDTH) / 2) * -1,
+      strokeWidth: convertSize(1),
       stroke: 'rgb(255, 0, 0)',
       fill: 'rgb(255, 255, 255)',
       visible: false,

@@ -1,5 +1,5 @@
 import { App } from 'leafer-editor';
-import { Debug } from '../helper';
+import { Debug } from '../helper/debug';
 import { Snap } from '../snap';
 
 export interface BasicDrawOptions {

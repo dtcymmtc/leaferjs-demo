@@ -1,5 +1,6 @@
 import { Box, Line, Point, UI } from 'leafer-editor';
 import { DEFAULT_BOTTOM_LINE_WIDTH } from '../constants';
+import { convertSize } from '../helper';
 import { BasicDraw, type BasicDrawOptions } from './basic-draw';
 
 /**
@@ -34,9 +35,9 @@ interface EdgeAnnotationsOptions extends BasicDrawOptions {
  */
 class EdgeAnnotations extends BasicDraw {
   /** 标注线距离原始边线的偏移距离（像素） */
-  private readonly offset = 6;
+  private readonly offset = convertSize(6);
   /** 原始边线宽度，用于计算有效偏移量 */
-  private readonly strokeWidth = DEFAULT_BOTTOM_LINE_WIDTH;
+  private readonly strokeWidth = convertSize(DEFAULT_BOTTOM_LINE_WIDTH);
 
   private uiData: UI[] = [];
 
@@ -145,7 +146,7 @@ class EdgeAnnotations extends BasicDraw {
     // 计算垂直于线段方向的单位向量
     const nx = -dy / length;
     const ny = dx / length;
-    const halfLen = 6; // 垂线半长
+    const halfLen = convertSize(6); // 垂线半长
 
     // 生成起终点垂线坐标
     return {
@@ -176,7 +177,7 @@ class EdgeAnnotations extends BasicDraw {
       [line, startLine, endLine].forEach((points) => {
         const ui = new Line({
           points,
-          strokeWidth: 2,
+          strokeWidth: convertSize(2),
           stroke: 'rgb(153,153,153)',
         });
         this.app.tree.add(ui);
@@ -203,7 +204,7 @@ class EdgeAnnotations extends BasicDraw {
             width: label.length,
             // rotation: label.angle,
             // origin: 'center',
-            fontSize: 12,
+            fontSize: convertSize(12),
             fill: 'rgb(0,0,0)', // 黑色字体
             textAlign: 'center', // 居中显示
           },

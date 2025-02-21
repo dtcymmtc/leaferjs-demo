@@ -1,5 +1,7 @@
+import '@leafer-in/view';
 import { message } from 'ant-design-vue';
 import { Point, PointerEvent } from 'leafer-editor';
+import { DEFAULT_ZOOM_SCALE } from '../constants';
 import { BasicDraw, type BasicDrawOptions } from './basic-draw';
 import { BottomLine } from './bottom-line';
 import { BottomLineGroup } from './bottom-line-group';
@@ -32,10 +34,13 @@ class DrawBottom extends BasicDraw {
     this.undo = this.undo.bind(this);
     this.exportData = this.exportData.bind(this);
     this.importData = this.importData.bind(this);
+    this.resetView = this.resetView.bind(this);
 
     this.app.on(PointerEvent.CLICK, this.onStart);
     this.app.on(PointerEvent.MOVE, this.onMove);
     this.app.on(PointerEvent.MENU, this.onAbort);
+
+    this.resetView();
   }
 
   /**
@@ -173,6 +178,7 @@ class DrawBottom extends BasicDraw {
    */
   importData(data: { x: number; y: number }[]) {
     this.reset();
+    this.resetView();
     data.forEach((statPoint, index) => {
       const endPoint = new Point(data[index + 1 === data.length ? 0 : index + 1]);
 
@@ -180,6 +186,15 @@ class DrawBottom extends BasicDraw {
       this.currentBottomLine?.drawing(endPoint);
       this.currentBottomLine?.finish();
     });
+
+    this.app.tree.zoom(this.bottomLineGroup.closedPolygon, undefined, true);
+  }
+
+  /** 重置视图 */
+  resetView() {
+    this.app.tree.zoomLayer.scale = DEFAULT_ZOOM_SCALE;
+    this.app.tree.zoomLayer.x = 0;
+    this.app.tree.zoomLayer.y = 0;
   }
 }
 

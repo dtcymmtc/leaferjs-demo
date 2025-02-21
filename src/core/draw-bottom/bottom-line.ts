@@ -1,7 +1,7 @@
 import { Bounds, Line, Point, PropertyEvent } from 'leafer-editor';
 import { AngleAuxiliaryLine, HintInput } from '../auxiliary';
 import { BottomLineStatus, DEFAULT_BOTTOM_LINE_WIDTH } from '../constants';
-import { getIntersection, getLineEndPoint } from '../helper';
+import { convertSize, getIntersection, getLineEndPoint } from '../helper';
 import { BasicDraw, type BasicDrawOptions } from './basic-draw';
 import { DrawBottom } from './draw-bottom';
 
@@ -36,7 +36,7 @@ class BottomLine extends BasicDraw {
     // 初始化线条对象
     this.line = new Line({
       width: 0,
-      strokeWidth: DEFAULT_BOTTOM_LINE_WIDTH,
+      strokeWidth: convertSize(DEFAULT_BOTTOM_LINE_WIDTH),
       x: this.start.x,
       y: this.start.y,
       stroke: this.defaultColor,

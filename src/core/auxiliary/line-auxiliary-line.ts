@@ -1,4 +1,5 @@
 import { App, Line, Point } from 'leafer-editor';
+import { convertSize } from '../helper';
 
 /** 直线辅助线类，用于显示和管理直线辅助线 */
 class LineAuxiliaryLine {
@@ -11,9 +12,9 @@ class LineAuxiliaryLine {
 
     // 初始化直线对象
     this.line = new Line({
-      strokeWidth: 1,
+      strokeWidth: convertSize(1),
       stroke: this.defaultColor,
-      dashPattern: [10, 10],
+      dashPattern: [convertSize(10), convertSize(10)],
       visible: false,
     });
 

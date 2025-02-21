@@ -1,5 +1,6 @@
-import { Ellipse, MoveEvent, Point, PointerEvent, Polygon, UI, UIEvent } from 'leafer-editor';
+import { Ellipse, Point, PointerEvent, Polygon, UI, UIEvent } from 'leafer-editor';
 import { DEFAULT_BOTTOM_LINE_WIDTH } from '../constants';
+import { convertSize } from '../helper';
 import { BasicDraw, type BasicDrawOptions } from './basic-draw';
 import { BottomLine } from './bottom-line';
 import { EdgeAnnotations } from './edge-annotations';
@@ -48,10 +49,6 @@ class BottomLineGroup extends BasicDraw {
           bottomLine.unselect();
         }
       });
-    });
-
-    this.app.on(MoveEvent.MOVE, (e) => {
-      console.log(e);
     });
 
     this.app.tree.add(this.closedPolygon);
@@ -154,10 +151,10 @@ class BottomLineGroup extends BasicDraw {
       const ui = new Ellipse({
         x,
         y,
-        width: DEFAULT_BOTTOM_LINE_WIDTH,
-        height: DEFAULT_BOTTOM_LINE_WIDTH,
-        offsetX: (DEFAULT_BOTTOM_LINE_WIDTH / 2) * -1,
-        offsetY: (DEFAULT_BOTTOM_LINE_WIDTH / 2) * -1,
+        width: convertSize(DEFAULT_BOTTOM_LINE_WIDTH),
+        height: convertSize(DEFAULT_BOTTOM_LINE_WIDTH),
+        offsetX: (convertSize(DEFAULT_BOTTOM_LINE_WIDTH) / 2) * -1,
+        offsetY: (convertSize(DEFAULT_BOTTOM_LINE_WIDTH) / 2) * -1,
         zIndex: 1,
       });
 

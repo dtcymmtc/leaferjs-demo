@@ -1,5 +1,11 @@
 import { App, Line } from 'leafer-editor';
-import { getAngleBetweenLines, getLineDirection, getLineEndPoint, lineArc } from '../helper';
+import {
+  convertSize,
+  getAngleBetweenLines,
+  getLineDirection,
+  getLineEndPoint,
+  lineArc,
+} from '../helper';
 import { HintInput } from './hint-input';
 
 /** 夹角辅助线类，用于显示线条之间的夹角 */
@@ -80,7 +86,7 @@ class AngleAuxiliaryLine {
 
     // 设置直线属性
     this.line.set({
-      strokeWidth: 1,
+      strokeWidth: convertSize(1),
       width,
       rotation: result,
       stroke: parallel ? this.parallelColor : this.defaultColor,
@@ -94,7 +100,7 @@ class AngleAuxiliaryLine {
 
     // 设置曲线属性
     this.curve.set({
-      strokeWidth: 1,
+      strokeWidth: convertSize(1),
       points: lineArc(getLineEndPoint(line), getLineEndPoint(this.line), 50, curvature),
     });
 

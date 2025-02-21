@@ -13,7 +13,8 @@
 import { Button, Space } from 'ant-design-vue';
 import { App } from 'leafer-editor';
 import { DotMatrix } from 'leafer-x-dot-matrix';
-import { Debug, DrawBottom, Snap } from './core';
+import { Constants, Debug, DrawBottom, Snap } from './core';
+import { convertSize } from './core/helper';
 
 const app = new App({
   view: window,
@@ -25,14 +26,16 @@ const app = new App({
     drag: 'auto',
   },
   zoom: {
-    min: 0.125,
-    max: 4,
+    min: Constants.DEFAULT_ZOOM_SCALE / 4,
+    max: Constants.DEFAULT_ZOOM_SCALE * 4,
   },
   cursor: false,
 });
 
 // 创建点阵实例
-const dotMatrix = new DotMatrix(app);
+const dotMatrix = new DotMatrix(app, {
+  dotMatrixGapMap: [convertSize(50)],
+});
 // 启用点阵显示
 dotMatrix.enableDotMatrix(true);
 
@@ -47,20 +50,20 @@ const drawBottom = new DrawBottom({
 const importData = () => {
   drawBottom.importData([
     {
-      x: 353,
-      y: 203,
+      x: -2500,
+      y: 2500,
     },
     {
-      x: 353,
-      y: 594,
+      x: 2500,
+      y: 2500,
     },
     {
-      x: 872,
-      y: 594,
+      x: 2500,
+      y: -2500,
     },
     {
-      x: 872,
-      y: 203,
+      x: -2500,
+      y: -2500,
     },
   ]);
 };
@@ -69,228 +72,136 @@ const importData = () => {
 const importBigData = () => {
   drawBottom.importData([
     {
-      x: 183,
-      y: 141,
+      x: 1696,
+      y: 1088,
     },
     {
-      x: 183,
-      y: 249,
+      x: 1696,
+      y: 2520,
     },
     {
-      x: 296,
-      y: 249,
+      x: 624,
+      y: 3400,
     },
     {
-      x: 296,
-      y: 307,
+      x: 1600,
+      y: 3912,
     },
     {
-      x: 183,
-      y: 307,
+      x: 624,
+      y: 4760,
     },
     {
-      x: 183,
-      y: 355,
+      x: 2032,
+      y: 5144,
     },
     {
-      x: 296,
-      y: 355,
+      x: 2032,
+      y: 4384,
     },
     {
-      x: 296,
-      y: 466,
+      x: 3088,
+      y: 5288,
     },
     {
-      x: 120,
-      y: 466,
+      x: 2256,
+      y: 5744,
     },
     {
-      x: 131,
-      y: 564,
+      x: 1152,
+      y: 5744,
     },
     {
-      x: 91,
-      y: 670,
+      x: 1152,
+      y: 6512,
     },
     {
-      x: 275,
-      y: 658,
+      x: 5176,
+      y: 6728,
     },
     {
-      x: 255,
-      y: 564,
+      x: 4152,
+      y: 6088,
     },
     {
-      x: 412,
-      y: 582,
+      x: 5952,
+      y: 6176,
     },
     {
-      x: 385,
-      y: 670,
+      x: 5952,
+      y: 6728,
     },
     {
-      x: 183,
-      y: 794,
+      x: 8208,
+      y: 6512,
     },
     {
-      x: 548,
-      y: 636,
+      x: 7264,
+      y: 5744,
     },
     {
-      x: 625,
-      y: 744,
+      x: 8472,
+      y: 5440,
     },
     {
-      x: 523,
-      y: 820,
+      x: 4152,
+      y: 5288,
     },
     {
-      x: 755,
-      y: 794,
+      x: 4000,
+      y: 4384,
     },
     {
-      x: 1006,
-      y: 744,
+      x: 8208,
+      y: 4384,
     },
     {
-      x: 980,
-      y: 658,
+      x: 8208,
+      y: 3624,
     },
     {
-      x: 1088,
-      y: 582,
+      x: 6336,
+      y: 3624,
     },
     {
-      x: 1047,
-      y: 434,
+      x: 6336,
+      y: 2520,
     },
     {
-      x: 908,
-      y: 493,
+      x: 8048,
+      y: 2520,
     },
     {
-      x: 939,
-      y: 623,
+      x: 8208,
+      y: 1504,
     },
     {
-      x: 827,
-      y: 623,
+      x: 5952,
+      y: 1272,
     },
     {
-      x: 791,
-      y: 530,
+      x: 5400,
+      y: 3624,
     },
     {
-      x: 755,
-      y: 582,
+      x: 3184,
+      y: 3912,
     },
     {
-      x: 720,
-      y: 670,
+      x: 3280,
+      y: 2720,
     },
     {
-      x: 672,
-      y: 598,
+      x: 4752,
+      y: 2360,
     },
     {
-      x: 701,
-      y: 506,
+      x: 3088,
+      y: 1504,
     },
     {
-      x: 857,
-      y: 447,
-    },
-    {
-      x: 573,
-      y: 434,
-    },
-    {
-      x: 605,
-      y: 546,
-    },
-    {
-      x: 523,
-      y: 564,
-    },
-    {
-      x: 484,
-      y: 506,
-    },
-    {
-      x: 523,
-      y: 466,
-    },
-    {
-      x: 412,
-      y: 434,
-    },
-    {
-      x: 412,
-      y: 402,
-    },
-    {
-      x: 672,
-      y: 338,
-    },
-    {
-      x: 966,
-      y: 205,
-    },
-    {
-      x: 1125,
-      y: 230,
-    },
-    {
-      x: 791,
-      y: 383,
-    },
-    {
-      x: 1177,
-      y: 318,
-    },
-    {
-      x: 1189,
-      y: 218,
-    },
-    {
-      x: 1161,
-      y: 75,
-    },
-    {
-      x: 875,
-      y: 141,
-    },
-    {
-      x: 857,
-      y: 100,
-    },
-    {
-      x: 701,
-      y: 100,
-    },
-    {
-      x: 701,
-      y: 183,
-    },
-    {
-      x: 573,
-      y: 249,
-    },
-    {
-      x: 523,
-      y: 117,
-    },
-    {
-      x: 347,
-      y: 183,
-    },
-    {
-      x: 234,
-      y: 171,
-    },
-    {
-      x: 336,
-      y: 75,
+      x: 2560,
+      y: 1704,
     },
   ]);
 };
