@@ -116,7 +116,7 @@ class Snap {
     });
 
     // 将鼠标指针添加到 sky 层
-    this.app.sky.add(this.cursor);
+    this.app.tree.add(this.cursor);
 
     // 监听鼠标移动事件
     this.app.on(PointerEvent.MOVE, (event: UIEvent) => {

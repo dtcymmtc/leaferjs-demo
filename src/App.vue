@@ -28,6 +28,7 @@ const app = new App({
     min: 0.125,
     max: 4,
   },
+  cursor: false,
 });
 
 // 创建点阵实例

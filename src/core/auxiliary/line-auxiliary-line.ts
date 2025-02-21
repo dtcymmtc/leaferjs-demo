@@ -18,7 +18,7 @@ class LineAuxiliaryLine {
     });
 
     // 将直线添加到应用的天空层中
-    this.app.sky.add(this.line);
+    this.app.tree.add(this.line);
   }
 
   /**
