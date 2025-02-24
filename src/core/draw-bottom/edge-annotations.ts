@@ -1,6 +1,6 @@
 import { Box, Line, Point, UI } from 'leafer-editor';
 import { DEFAULT_BOTTOM_LINE_WIDTH } from '../constants';
-import { convertSize } from '../helper';
+import { convertSize, getLineDirection } from '../helper';
 import { BasicDraw, type BasicDrawOptions } from './basic-draw';
 
 /**
@@ -9,7 +9,7 @@ import { BasicDraw, type BasicDrawOptions } from './basic-draw';
  * @property angle - 标签旋转角度（度）
  * @property length - 对应边的实际长度（像素）
  */
-type AnnotationLabel = { position: Point; angle: number; length: number };
+type AnnotationLabel = { position: Point; angle: number; length: number; direction: string };
 
 /**
  * 边标注数据结构
@@ -110,9 +110,19 @@ class EdgeAnnotations extends BasicDraw {
       const angleRad = Math.atan2(dy, dx);
       const angleDeg = (angleRad * 180) / Math.PI; // 转换为度数
 
+      const line = new Line({
+        x: A_prime.x,
+        y: A_prime.y,
+        toPoint: {
+          x: B_prime.x - (A_prime.x ?? 0),
+          y: B_prime.y - (A_prime.y ?? 0),
+        },
+      });
+
       annotations.labels.push({
         position: new Point(midPoint),
         length,
+        direction: getLineDirection(line),
         angle: angleDeg,
       });
     }
@@ -188,22 +198,34 @@ class EdgeAnnotations extends BasicDraw {
     // 创建边长标签
     annotations.labels.forEach((label, index) => {
       const [start] = annotations.lines[index];
-      const textContent = label.length.toFixed(0); // 取整显示
+      const textContent = `${label.length.toFixed(0)}`; // 取整显示
+
+      // 文字旋转
+      const labelRotation: Record<string, number> = {
+        top: 180,
+        'top-right': 180,
+        'top-left': 180,
+        left: 180,
+        'left-top': 180,
+        'left-bottom': 180,
+        bottom: 180,
+        'bottom-left': 180,
+      };
+
+      console.log();
 
       const ui = new Box({
         x: start.x,
         y: start.y,
         width: label.length, // 文本框宽度与边长一致
-        // fill: 'rgba(0,0,0,0.4)', // 半透明背景
         rotation: label.angle, // 文本旋转角度
-        // origin: 'center',
         children: [
           {
             tag: 'Text',
             text: textContent,
             width: label.length,
-            // rotation: label.angle,
-            // origin: 'center',
+            rotation: labelRotation[label.direction] ?? 0,
+            origin: 'center',
             fontSize: convertSize(12),
             fill: 'rgb(0,0,0)', // 黑色字体
             textAlign: 'center', // 居中显示
