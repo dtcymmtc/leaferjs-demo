@@ -50,20 +50,20 @@ const drawBottom = new DrawBottom({
 const importData = () => {
   drawBottom.importData([
     {
-      x: -2500,
-      y: 2500,
+      x: 0,
+      y: 0,
     },
     {
-      x: 2500,
-      y: 2500,
+      x: 5000,
+      y: 0,
     },
     {
-      x: 2500,
-      y: -2500,
+      x: 5000,
+      y: -5000,
     },
     {
-      x: -2500,
-      y: -2500,
+      x: 0,
+      y: -5000,
     },
   ]);
 };

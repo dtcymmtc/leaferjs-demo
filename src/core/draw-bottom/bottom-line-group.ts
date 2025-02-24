@@ -162,7 +162,7 @@ class BottomLineGroup extends BasicDraw {
       this.snap.addTargetPoint(new Point(x, y));
 
       if (count === 1) {
-        ui.set({ fill: 'blue' });
+        ui.set({ fill: 'rgb(20,127,250)' });
         this.drawablePoints.push(ui);
       }
 

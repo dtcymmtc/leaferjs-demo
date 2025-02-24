@@ -1,6 +1,6 @@
 import '@leafer-in/view';
 import { message } from 'ant-design-vue';
-import { Point, PointerEvent } from 'leafer-editor';
+import { Point, PointerEvent, RenderEvent } from 'leafer-editor';
 import { DEFAULT_ZOOM_SCALE } from '../constants';
 import { BasicDraw, type BasicDrawOptions } from './basic-draw';
 import { BottomLine } from './bottom-line';
@@ -50,7 +50,6 @@ class DrawBottom extends BasicDraw {
     const point = this.snap.getCursorPoint();
 
     if (this.status === 'done') {
-      message.error('绘制已完成');
       return;
     }
 
@@ -187,7 +186,9 @@ class DrawBottom extends BasicDraw {
       this.currentBottomLine?.finish();
     });
 
-    this.app.tree.zoom(this.bottomLineGroup.closedPolygon, undefined, true);
+    this.app.tree.once(RenderEvent.END, () => {
+      this.app.tree.zoom(this.bottomLineGroup.closedPolygon, undefined, true);
+    });
   }
 
   /** 重置视图 */
