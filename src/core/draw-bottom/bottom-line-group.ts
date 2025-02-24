@@ -17,6 +17,7 @@ const getKey = (p: Point): string => {
  * 用于管理一组底边线
  */
 class BottomLineGroup extends BasicDraw {
+  /** 底边数组 */
   bottomLines: BottomLine[] = [];
   /** 可绘制点 */
   drawablePoints: UI[] = [];
@@ -34,6 +35,10 @@ class BottomLineGroup extends BasicDraw {
     fill: 'rgba(255, 224, 178, 1)',
     visible: false,
   });
+  /** 选中的底边 */
+  selectedBottomLine: BottomLine | undefined;
+  /** 经过的底边 */
+  hoverBottomLine: BottomLine | undefined;
 
   constructor(options: BottomLineGroupOptions) {
     super(options);
@@ -42,16 +47,39 @@ class BottomLineGroup extends BasicDraw {
     this.app.on(PointerEvent.MOVE, (e: UIEvent) => {
       if (!this.closed) return;
 
-      this.bottomLines.forEach((bottomLine) => {
-        if (bottomLine.getLine().innerId === e.target.innerId) {
-          bottomLine.select();
-        } else {
-          bottomLine.unselect();
-        }
-      });
+      this.hoverBottomLine = this.findBottomLine(e.target.innerId);
+      this.updateBottomLines();
+    });
+
+    this.app.on(PointerEvent.CLICK, (e: UIEvent) => {
+      if (!this.closed) return;
+
+      this.selectedBottomLine = this.findBottomLine(e.target.innerId);
+      this.updateBottomLines();
     });
 
     this.app.tree.add(this.closedPolygon);
+  }
+
+  /** 查找底边 */
+  private findBottomLine(innerId: number): BottomLine | undefined {
+    return this.bottomLines.find((line) => line.getLine().innerId === innerId);
+  }
+
+  /** 更新底边视图 */
+  updateBottomLines() {
+    this.bottomLines.forEach((bottomLine) => {
+      if (bottomLine === this.selectedBottomLine) {
+        bottomLine.select();
+        return;
+      }
+      if (bottomLine === this.hoverBottomLine) {
+        bottomLine.hover();
+        return;
+      }
+
+      bottomLine.normal();
+    });
   }
 
   /**
@@ -99,7 +127,7 @@ class BottomLineGroup extends BasicDraw {
       const next = neighbors.find((p) => !previousPoint || getKey(p) !== getKey(previousPoint));
 
       if (!next) {
-        throw new Error('无法找到闭合路径');
+        return [];
       }
 
       // 更新路径和指针

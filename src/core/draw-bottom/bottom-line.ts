@@ -18,6 +18,7 @@ class BottomLine extends BasicDraw {
   defaultColor = 'rgb(150,197,250)';
   hitColor = 'rgb(225,33,0)';
   finishColor = 'rgb(140,140,140)';
+  hoverColor = 'rgb(175,210,250)';
   selectedColor = 'rgb(110,170,250)';
   hintInput: HintInput;
   angleAuxiliaryLine: AngleAuxiliaryLine;
@@ -183,8 +184,15 @@ class BottomLine extends BasicDraw {
     });
   }
 
-  /** 取消选中 */
-  unselect() {
+  /* 经过 */
+  hover() {
+    this.line.set({
+      stroke: this.hoverColor,
+    });
+  }
+
+  /** 正常 */
+  normal() {
     this.line.set({
       stroke: this.finishColor,
     });
