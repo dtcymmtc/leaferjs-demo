@@ -1,18 +1,23 @@
 import { Bounds, Line } from 'leafer-editor';
+import { BasicDraw, type BasicDrawOptions } from '../basic/basic-draw';
 import { getBoundsCenter } from '../helper';
 
+interface HintInputOptions extends BasicDrawOptions {
+  autoFocus?: boolean;
+  suffix?: string;
+  onChange?: (value: string) => void;
+}
+
 /** 提示输入框类，用于显示和管理输入框 */
-class HintInput {
+class HintInput extends BasicDraw {
   input: HTMLInputElement = document.createElement('input');
   timer: number | undefined = undefined;
   autoFocus = false;
   suffix: string | undefined;
 
-  constructor(options?: {
-    autoFocus?: boolean;
-    suffix?: string;
-    onChange?: (value: string) => void;
-  }) {
+  constructor(options: HintInputOptions) {
+    super(options);
+
     document.body.appendChild(this.input);
 
     this.autoFocus = options?.autoFocus ?? false;

@@ -1,7 +1,7 @@
 import { Box, Line, Point, UI } from 'leafer-editor';
+import { BasicDraw, type BasicDrawOptions } from '../basic/basic-draw';
 import { DEFAULT_BOTTOM_LINE_WIDTH } from '../constants';
 import { convertSize, getLineDirection } from '../helper';
-import { BasicDraw, type BasicDrawOptions } from './basic-draw';
 
 /**
  * 标注标签的位置参数

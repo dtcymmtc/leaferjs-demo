@@ -1,4 +1,5 @@
-import { App, Line } from 'leafer-editor';
+import { Line } from 'leafer-editor';
+import { BasicDraw, type BasicDrawOptions } from '../basic/basic-draw';
 import {
   convertSize,
   getAngleBetweenLines,
@@ -8,9 +9,13 @@ import {
 } from '../helper';
 import { HintInput } from './hint-input';
 
+interface AngleAuxiliaryLineOptions extends BasicDrawOptions {
+  x: number;
+  y: number;
+}
+
 /** 夹角辅助线类，用于显示线条之间的夹角 */
-class AngleAuxiliaryLine {
-  app: App;
+class AngleAuxiliaryLine extends BasicDraw {
   line: Line;
   curve: Line;
   hintInput: HintInput | undefined;
@@ -18,8 +23,8 @@ class AngleAuxiliaryLine {
   defaultColor = 'rgb(153,153,153)';
   parallelColor = 'rgb(22,217,168)';
 
-  constructor(options: { app: App; x: number; y: number }) {
-    this.app = options.app;
+  constructor(options: AngleAuxiliaryLineOptions) {
+    super(options);
 
     // 初始化直线对象
     this.line = new Line({
@@ -43,6 +48,9 @@ class AngleAuxiliaryLine {
 
     // 初始化提示输入框
     this.hintInput = new HintInput({
+      app: this.app,
+      snap: this.snap,
+      debug: this.debug,
       suffix: '°',
     });
   }

@@ -1,8 +1,8 @@
 import { Bounds, Line, Point, PropertyEvent } from 'leafer-editor';
 import { AngleAuxiliaryLine, HintInput } from '../auxiliary';
+import { BasicDraw, type BasicDrawOptions } from '../basic/basic-draw';
 import { BottomLineStatus, DEFAULT_BOTTOM_LINE_WIDTH } from '../constants';
 import { convertSize, getIntersection, getLineEndPoint } from '../helper';
-import { BasicDraw, type BasicDrawOptions } from './basic-draw';
 import { DrawBottom } from './draw-bottom';
 
 interface BottomLineOptions extends BasicDrawOptions {
@@ -46,6 +46,9 @@ class BottomLine extends BasicDraw {
 
     // 初始化提示输入框
     this.hintInput = new HintInput({
+      app: this.app,
+      debug: this.debug,
+      snap: this.snap,
       autoFocus: true,
       onChange: (value) => {
         if (this.line) {
@@ -59,6 +62,8 @@ class BottomLine extends BasicDraw {
     // 初始化角度辅助线
     this.angleAuxiliaryLine = new AngleAuxiliaryLine({
       app: this.app,
+      snap: this.snap,
+      debug: this.debug,
       x: this.start.x,
       y: this.start.y,
     });

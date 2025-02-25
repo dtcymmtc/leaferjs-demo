@@ -1,7 +1,7 @@
 import { Ellipse, Point, PointerEvent, Polygon, UI, UIEvent } from 'leafer-editor';
+import { BasicDraw, type BasicDrawOptions } from '../basic/basic-draw';
 import { DEFAULT_BOTTOM_LINE_WIDTH } from '../constants';
 import { convertSize } from '../helper';
-import { BasicDraw, type BasicDrawOptions } from './basic-draw';
 import { BottomLine } from './bottom-line';
 import { EdgeAnnotations } from './edge-annotations';
 

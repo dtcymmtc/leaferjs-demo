@@ -1,8 +1,8 @@
 import '@leafer-in/view';
 import { message } from 'ant-design-vue';
 import { Point, PointerEvent, RenderEvent } from 'leafer-editor';
+import { BasicDraw, type BasicDrawOptions } from '../basic/basic-draw';
 import { DEFAULT_ZOOM_SCALE } from '../constants';
-import { BasicDraw, type BasicDrawOptions } from './basic-draw';
 import { BottomLine } from './bottom-line';
 import { BottomLineGroup } from './bottom-line-group';
 
