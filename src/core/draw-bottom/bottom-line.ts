@@ -12,6 +12,15 @@ import {
 } from '../helper';
 import { DrawBottom } from './draw-bottom';
 
+/**
+ * @typedef {Object} BottomLineOptions
+ * @extends BasicDrawOptions
+ * @property {DrawBottom} drawBottom - 绘制腔底实例
+ * @property {Point} start - 起点
+ * @property {Function} [onFinish] - 完成回调
+ * @property {Function} [onChange] - 变化回调
+ * @property {Function} [onModify] - 修改回调
+ */
 interface BottomLineOptions extends BasicDrawOptions {
   drawBottom: DrawBottom;
   start: Point;
@@ -36,6 +45,9 @@ class BottomLine extends BasicDraw {
   modifyCallback: BottomLineOptions['onModify'];
   start: Point;
 
+  /**
+   * @param {BottomLineOptions} options - 配置选项
+   */
   constructor(options: BottomLineOptions) {
     super(options);
 

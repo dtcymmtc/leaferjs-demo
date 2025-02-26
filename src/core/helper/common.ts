@@ -2,12 +2,23 @@ import { Bounds, Line, Point } from 'leafer-editor';
 import { round } from 'lodash-es';
 import { DEFAULT_ZOOM_SCALE } from '../constants';
 
-/** 获取矩形的中心 */
+/**
+ * 获取矩形的中心
+ * @param {Bounds} bounds - 矩形边界
+ * @returns {Point} 中心点
+ */
 export const getBoundsCenter = (bounds: Bounds) => {
   return new Point(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
 };
 
-/** 计算弧线的点 */
+/**
+ * 计算弧线的点
+ * @param {Point} start - 起点
+ * @param {Point} end - 终点
+ * @param {number} [numPoints=5] - 点的数量
+ * @param {number} [curvature=0.5] - 曲率
+ * @returns {Point[]} 弧线上的点
+ */
 export const lineArc = (start: Point, end: Point, numPoints = 5, curvature = 0.5) => {
   const points = [];
 
@@ -42,7 +53,11 @@ export const lineArc = (start: Point, end: Point, numPoints = 5, curvature = 0.5
   return points;
 };
 
-/** 获取线段的方向 */
+/**
+ * 获取线段的方向
+ * @param {Line} line - 线段
+ * @returns {string} 方向
+ */
 export const getLineDirection = (line: Line) => {
   const angle = line.rotation ?? 0;
 
@@ -62,7 +77,11 @@ export const getLineDirection = (line: Line) => {
   return 'unknown';
 };
 
-/** 获取线段的起终点坐标 */
+/**
+ * 获取线段的起终点坐标
+ * @param {Line} line - 线段
+ * @returns {Point[]} 起终点坐标
+ */
 export const getLinePoints = (line: Line) => {
   if (line.points?.length) return line.points as Point[];
   const x1 = line.getComputedAttr('x') ?? 0;
@@ -71,7 +90,11 @@ export const getLinePoints = (line: Line) => {
   return [new Point(x1, y1), getLineEndPoint(line)];
 };
 
-/** 获取线段的终点坐标 */
+/**
+ * 获取线段的终点坐标
+ * @param {Line} line - 线段
+ * @returns {Point} 终点坐标
+ */
 export const getLineEndPoint = (line: Line) => {
   const x1 = line.getComputedAttr('x') ?? 0;
   const y1 = line.getComputedAttr('y') ?? 0;
@@ -84,7 +107,12 @@ export const getLineEndPoint = (line: Line) => {
   return new Point(round(x2), round(y2));
 };
 
-/** 设置线段的起终点 */
+/**
+ * 设置线段的起终点
+ * @param {Line} line - 线段
+ * @param {Point} start - 起点
+ * @param {Point} end - 终点
+ */
 export const setLineStartEndPoint = (line: Line, start: Point, end: Point) => {
   line.set({
     x: start.x,
@@ -96,7 +124,12 @@ export const setLineStartEndPoint = (line: Line, start: Point, end: Point) => {
   });
 };
 
-/** 计算两条线段之间的夹角 */
+/**
+ * 计算两条线段之间的夹角
+ * @param {Line} line1 - 第一条线段
+ * @param {Line} line2 - 第二条线段
+ * @returns {number} 夹角
+ */
 export const getAngleBetweenLines = (line1: Line, line2: Line) => {
   const line1End = getLineEndPoint(line1);
   const line2End = getLineEndPoint(line2);
@@ -112,12 +145,20 @@ export const getAngleBetweenLines = (line1: Line, line2: Line) => {
   return angle;
 };
 
-/** 尺寸转换 */
+/**
+ * 尺寸转换
+ * @param {number} length - 长度
+ * @returns {number} 转换后的长度
+ */
 export const convertSize = (length: number) => {
   return length / DEFAULT_ZOOM_SCALE;
 };
 
-/** 获取多边形的质心 */
+/**
+ * 获取多边形的质心
+ * @param {Point[]} points - 多边形顶点
+ * @returns {Point} 质心
+ */
 export const getPolygonCentroid = (points: Point[]): Point => {
   let area = 0;
   let cx = 0;
@@ -142,10 +183,9 @@ export const getPolygonCentroid = (points: Point[]): Point => {
 
 /**
  * 根据给定的线段起点与终点，在保持中心点和方向不变的情况下，调整线段长度
- * @param start - 原始线段起点
- * @param end   - 原始线段终点
- * @param newLength - 新的线段长度
- * @returns 调整后新的起点与终点坐标
+ * @param {Line} line - 线段
+ * @param {number} newLength - 新的线段长度
+ * @returns {Point[]} 调整后新的起点与终点坐标
  */
 export const adjustLineFromCenter = (line: Line, newLength: number): Point[] => {
   const [start, end] = getLinePoints(line);

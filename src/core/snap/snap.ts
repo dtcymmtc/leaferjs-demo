@@ -6,7 +6,12 @@ import { convertSize } from '../helper';
 
 const threshold = convertSize(10);
 
-/** 获取吸附点 */
+/**
+ * 获取吸附点
+ * @param {Point} mousePos - 鼠标位置
+ * @param {Point[]} points - 吸附点集合
+ * @returns {Object} 吸附结果
+ */
 export function snapToPoints(mousePos: Point, points: Point[]) {
   // 存储不同类型的吸附点
   const horizontalTargets: Point[] = []; // 水平吸附点
@@ -95,13 +100,20 @@ export function snapToPoints(mousePos: Point, points: Point[]) {
   };
 }
 
-/** 吸附 */
+/**
+ * 吸附类
+ */
 class Snap {
   private app: App;
   private cursor: Ellipse;
   private lineAuxiliaryLine: LineAuxiliaryLine[] = [];
   private targetPoints: Point[] = [];
 
+  /**
+   * 构造函数
+   * @param {Object} options - 配置选项
+   * @param {App} options.app - 应用实例
+   */
   constructor(options: { app: App }) {
     this.app = options.app;
 
@@ -154,14 +166,25 @@ class Snap {
     });
   }
 
+  /**
+   * 获取鼠标指针位置
+   * @returns {Point} 鼠标指针位置
+   */
   getCursorPoint() {
     return new Point(this.cursor.x, this.cursor.y);
   }
 
+  /**
+   * 添加吸附点
+   * @param {Point} point - 吸附点
+   */
   addTargetPoint(point: Point) {
     this.targetPoints.push(point);
   }
 
+  /**
+   * 清空吸附点
+   */
   clearTargetPoints() {
     this.targetPoints = [];
   }

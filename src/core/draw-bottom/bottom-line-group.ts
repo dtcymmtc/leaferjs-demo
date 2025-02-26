@@ -5,6 +5,11 @@ import { convertSize, getLinePoints } from '../helper';
 import { BottomLine } from './bottom-line';
 import { EdgeAnnotations } from './edge-annotations';
 
+/**
+ * @typedef {Object} BottomLineGroupOptions
+ * @extends BasicDrawOptions
+ * @property {Function} [onClosed] - 闭合回调
+ */
 interface BottomLineGroupOptions extends BasicDrawOptions {
   onClosed?: () => void;
 }
@@ -15,6 +20,7 @@ const getKey = (p: Point): string => {
 
 /**
  * 用于管理一组底边线
+ * @extends BasicDraw
  */
 class BottomLineGroup extends BasicDraw {
   /** 底边数组 */
@@ -40,6 +46,9 @@ class BottomLineGroup extends BasicDraw {
   /** 经过的底边 */
   hoverBottomLine: BottomLine | undefined;
 
+  /**
+   * @param {BottomLineGroupOptions} options - 配置选项
+   */
   constructor(options: BottomLineGroupOptions) {
     super(options);
     this.closedCallback = options.onClosed;
@@ -85,8 +94,8 @@ class BottomLineGroup extends BasicDraw {
 
   /**
    * 判断点是否可绘制
-   * @param point - 要判断的点
-   * @returns 如果点是可绘制点，返回 true；否则返回 false
+   * @param {Point} point - 要判断的点
+   * @returns {boolean} 如果点是可绘制点，返回 true；否则返回 false
    */
   isDrawablePoint(point: Point): boolean {
     if (this.drawablePoints.length === 0) return true;
@@ -141,7 +150,11 @@ class BottomLineGroup extends BasicDraw {
     return path.slice(0, -1);
   }
 
-  /** 修改底边重新闭合 */
+  /**
+   * 修改底边重新闭合
+   * @param {Point[]} newValue - 新的顶点数组
+   * @param {Point[]} oldValue - 旧的顶点数组
+   */
   modifyBottomLine(newValue: Point[], oldValue: Point[]) {
     const [newStart, newEnd] = newValue;
     const [oldStart, oldEnd] = oldValue;
@@ -257,7 +270,7 @@ class BottomLineGroup extends BasicDraw {
 
   /**
    * 添加一条底边线
-   * @param line - 要添加的底边线
+   * @param {BottomLine} line - 要添加的底边线
    */
   push(line: BottomLine): void {
     this.bottomLines.push(line);

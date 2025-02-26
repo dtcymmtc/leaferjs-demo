@@ -10,7 +10,9 @@ interface HintInputOptions extends BasicDrawOptions {
   type?: 'line' | 'arc';
 }
 
-/** 提示输入框类，用于显示和管理输入框 */
+/**
+ * 提示输入框类，用于显示和管理输入框
+ */
 class HintInput extends BasicDraw {
   input: HTMLInputElement = document.createElement('input');
   timer: number | undefined = undefined;
@@ -19,6 +21,10 @@ class HintInput extends BasicDraw {
   edgeAnnotations: EdgeAnnotations | undefined;
   type: Required<HintInputOptions>['type'];
 
+  /**
+   * 创建一个提示输入框实例
+   * @param {HintInputOptions} options - 配置选项
+   */
   constructor(options: HintInputOptions) {
     super(options);
 
@@ -61,9 +67,9 @@ class HintInput extends BasicDraw {
 
   /**
    * 显示输入框
-   * @param line - 参考线条
-   * @param num - 显示的数值
-   * @param disabled - 是否禁用输入框
+   * @param {Line} line - 参考线条
+   * @param {number|string} [num] - 显示的数值
+   * @param {boolean} [disabled=false] - 是否禁用输入框
    */
   show(line: Line, num?: number | string, disabled = false) {
     if (!num) {
@@ -115,8 +121,8 @@ class HintInput extends BasicDraw {
 
   /**
    * 设置输入框的偏移值
-   * @param x - 水平偏移值
-   * @param y - 垂直偏移值
+   * @param {number} x - 水平偏移值
+   * @param {number} y - 垂直偏移值
    */
   setOffset(x: number, y: number) {
     this.input.style.marginTop = `${y}px`;

@@ -8,12 +8,16 @@ import { BottomLineGroup } from './bottom-line-group';
 
 /**
  * 用于绘制腔底
+ * @extends BasicDraw
  */
 class DrawBottom extends BasicDraw {
   currentBottomLine: BottomLine | undefined = undefined;
   status: 'init' | 'idle' | 'drawing' | 'done' = 'init';
   bottomLineGroup: BottomLineGroup;
 
+  /**
+   * @param {BasicDrawOptions} options - 配置选项
+   */
   constructor(options: BasicDrawOptions) {
     super(options);
 
@@ -73,7 +77,7 @@ class DrawBottom extends BasicDraw {
 
   /**
    * 创建底边线
-   * @param point - 起点
+   * @param {Point} point - 起点
    */
   createBottomLine(point: Point) {
     // 结束上一个底边绘制
@@ -163,6 +167,7 @@ class DrawBottom extends BasicDraw {
 
   /**
    * 导出数据
+   * @returns {Array<{x: number, y: number}>} 导出的数据
    */
   exportData() {
     const result = this.bottomLineGroup.sortPolygonPoints().map((point) => {
@@ -176,7 +181,8 @@ class DrawBottom extends BasicDraw {
   }
 
   /**
-   * 导入
+   * 导入数据
+   * @param {Array<{x: number, y: number}>} data - 要导入的数据
    */
   importData(data: { x: number; y: number }[]) {
     this.reset();

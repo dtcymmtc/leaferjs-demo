@@ -14,7 +14,9 @@ interface AngleAuxiliaryLineOptions extends BasicDrawOptions {
   y: number;
 }
 
-/** 夹角辅助线类，用于显示线条之间的夹角 */
+/**
+ * 夹角辅助线类，用于显示线条之间的夹角
+ */
 class AngleAuxiliaryLine extends BasicDraw {
   line: Line;
   curve: Line;
@@ -23,6 +25,10 @@ class AngleAuxiliaryLine extends BasicDraw {
   defaultColor = 'rgb(89,89,89)';
   parallelColor = 'rgb(22,217,168)';
 
+  /**
+   * 创建一个夹角辅助线实例
+   * @param {AngleAuxiliaryLineOptions} options - 配置选项
+   */
   constructor(options: AngleAuxiliaryLineOptions) {
     super(options);
 
@@ -58,7 +64,7 @@ class AngleAuxiliaryLine extends BasicDraw {
 
   /**
    * 显示夹角辅助线
-   * @param line - 参考线条
+   * @param {Line} line - 参考线条
    */
   show(line: Line) {
     let result = 0;

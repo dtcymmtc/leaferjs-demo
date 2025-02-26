@@ -1,5 +1,9 @@
+/**
+ * Debug 类，用于在页面上显示调试信息
+ */
 class Debug {
   element: HTMLElement;
+
   constructor() {
     if (document.getElementById('debug')) {
       document.getElementById('debug')?.remove();
@@ -19,10 +23,17 @@ class Debug {
     this.element.style.color = '#fefefe';
   }
 
+  /**
+   * 记录调试信息
+   * @param {...any[]} args - 要记录的信息
+   */
   log(...args: any[]) {
     this.element.innerHTML += args.join(' ') + '<br/>';
   }
 
+  /**
+   * 清除调试信息
+   */
   clear() {
     this.element.innerHTML = '';
   }

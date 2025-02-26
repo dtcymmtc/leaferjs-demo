@@ -1,12 +1,19 @@
 import { App, Line, Point } from 'leafer-editor';
 import { convertSize } from '../helper';
 
-/** 直线辅助线类，用于显示和管理直线辅助线 */
+/**
+ * 直线辅助线类，用于显示和管理直线辅助线
+ */
 class LineAuxiliaryLine {
   app: App;
   line: Line;
   defaultColor = 'rgb(22,217,168)';
 
+  /**
+   * 创建一个直线辅助线实例
+   * @param {Object} options - 配置选项
+   * @param {App} options.app - 应用实例
+   */
   constructor(options: { app: App }) {
     this.app = options.app;
 
@@ -24,7 +31,7 @@ class LineAuxiliaryLine {
 
   /**
    * 显示直线辅助线
-   * @param points - 直线的点数组
+   * @param {Point[]} points - 直线的点数组
    */
   show(points: Point[]) {
     this.line.set({

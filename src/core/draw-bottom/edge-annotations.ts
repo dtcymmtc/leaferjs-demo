@@ -4,10 +4,12 @@ import { DEFAULT_BOTTOM_LINE_WIDTH } from '../constants';
 import { convertSize, getLineDirection, setLineStartEndPoint } from '../helper';
 
 /**
- * 标注标签的位置参数
- * @property position - 标签中心坐标
- * @property angle - 标签旋转角度（度）
- * @property length - 对应边的实际长度（像素）
+ * @typedef {Object} AnnotationLabel
+ * @property {Point} position - 标签中心坐标
+ * @property {number} angle - 标签旋转角度（度）
+ * @property {number} length - 对应边的实际长度（像素）
+ * @property {string} direction - 标签方向
+ * @property {number} labelAngle - 标签旋转角度
  */
 type AnnotationLabel = {
   position: Point;
@@ -18,15 +20,23 @@ type AnnotationLabel = {
 };
 
 /**
- * 边标注数据结构
- * @property lines - 偏移后的辅助线集合（每条边对应一条偏移线）
- * @property labels - 边长标签集合
+ * @typedef {Object} Annotations
+ * @property {Point[][]} lines - 偏移后的辅助线集合（每条边对应一条偏移线）
+ * @property {AnnotationLabel[]} labels - 边长标签集合
  */
 type Annotations = {
   lines: Point[][];
   labels: AnnotationLabel[];
 };
 
+/**
+ * @typedef {Object} EdgeAnnotationsOptions
+ * @extends BasicDrawOptions
+ * @property {Point[]} points - 顶点数组
+ * @property {'polygon' | 'line' | 'arc'} type - 图形类型
+ * @property {boolean} [showLabel] - 是否显示标签
+ * @property {boolean} [showLine] - 是否显示线条
+ */
 interface EdgeAnnotationsOptions extends BasicDrawOptions {
   points: Point[];
   type: 'polygon' | 'line' | 'arc';
@@ -36,11 +46,7 @@ interface EdgeAnnotationsOptions extends BasicDrawOptions {
 
 /**
  * 边标注工具类，用于在图形边线外侧生成尺寸标注
- * ▷ 功能特点：
- * - 自动处理多边形方向（顺时针/逆时针）
- * - 自动计算外法线方向偏移
- * - 生成带旋转角度的长度标签
- * - 在原始线段两端绘制垂直标记线
+ * @extends BasicDraw
  */
 class EdgeAnnotations extends BasicDraw {
   /** 标注线距离原始边线的偏移距离（像素） */
@@ -76,8 +82,8 @@ class EdgeAnnotations extends BasicDraw {
 
   /**
    * 计算多边形带符号面积（用于判断多边形走向）
-   * @param vertices - 多边形顶点数组
-   * @returns 面积的2倍（符号指示方向）
+   * @param {Point[]} vertices - 多边形顶点数组
+   * @returns {number} 面积的2倍（符号指示方向）
    * ▷ 正值表示逆时针（CCW），负值表示顺时针（CW）
    */
   private calculateAreaSign(vertices: Point[]): number {
@@ -91,8 +97,8 @@ class EdgeAnnotations extends BasicDraw {
 
   /**
    * 生成边线标注信息
-   * @param vertices - 多边形顶点数组（有序排列）
-   * @returns 包含偏移线和标签数据的标注信息
+   * @param {Point[]} vertices - 多边形顶点数组（有序排列）
+   * @returns {Annotations} 包含偏移线和标签数据的标注信息
    * ▷ 计算逻辑：
    * 1. 判断多边形方向（CCW/CW）
    * 2. 沿各边外法线方向生成平行偏移线
@@ -117,6 +123,11 @@ class EdgeAnnotations extends BasicDraw {
     return annotations;
   }
 
+  /**
+   * 生成线段标注信息
+   * @param {Point[]} vertices - 线段顶点数组
+   * @returns {Annotations} 包含偏移线和标签数据的标注信息
+   */
   private generateLineAnnotations(vertices: Point[]): Annotations {
     const result = this.generateAnnotations(vertices[0], vertices[1], false);
 
@@ -127,9 +138,9 @@ class EdgeAnnotations extends BasicDraw {
   }
 
   /**
-   * 新增：生成弧线标注信息
-   * @param arcPoints - 构成弧线的离散点
-   * @returns 完整的标注信息，包含若干个分段偏移线 + 一个整体长度标签
+   * 生成弧线标注信息
+   * @param {Point[]} arcPoints - 构成弧线的离散点
+   * @returns {Annotations} 完整的标注信息，包含若干个分段偏移线 + 一个整体长度标签
    */
   private generateArcAnnotations(arcPoints: Point[]): Annotations {
     // 如果点数少于2，无意义
@@ -213,6 +224,13 @@ class EdgeAnnotations extends BasicDraw {
     return annotations;
   }
 
+  /**
+   * 生成边线标注信息
+   * @param {Point} A - 边线起点
+   * @param {Point} B - 边线终点
+   * @param {boolean} isCCW - 是否逆时针
+   * @returns {Object} 包含偏移线和标签数据的标注信息
+   */
   private generateAnnotations(A: Point, B: Point, isCCW: boolean) {
     const effectiveOffset = this.offset + this.strokeWidth / 2;
 
@@ -270,9 +288,9 @@ class EdgeAnnotations extends BasicDraw {
 
   /**
    * 生成线段两端的垂直标记线（用于标注起止位置）
-   * @param start - 原始线段起点
-   * @param end - 原始线段终点
-   * @returns 包含两端垂直线的对象
+   * @param {Point} start - 原始线段起点
+   * @param {Point} end - 原始线段终点
+   * @returns {Object} 包含两端垂直线的对象
    * ▷ 每端垂线长度为12px（中心向两侧各延伸6px）
    */
   private getPerpendicularLines(
@@ -311,6 +329,7 @@ class EdgeAnnotations extends BasicDraw {
 
   /**
    * 可视化标注信息
+   * @param {Annotations} annotations - 标注信息
    * ▷ 渲染流程：
    * 1. 绘制所有平行偏移线
    * 2. 在原始线段两端绘制垂直标记
@@ -366,6 +385,9 @@ class EdgeAnnotations extends BasicDraw {
     });
   }
 
+  /**
+   * 清除所有标注
+   */
   clear() {
     this.uiData.forEach((ui) => ui.remove());
     this.uiData = [];
