@@ -2,7 +2,14 @@ import { Bounds, Line, Point, PropertyEvent } from 'leafer-editor';
 import { AngleAuxiliaryLine, HintInput } from '../auxiliary';
 import { BasicDraw, type BasicDrawOptions } from '../basic/basic-draw';
 import { BottomLineStatus, DEFAULT_BOTTOM_LINE_WIDTH } from '../constants';
-import { convertSize, getIntersection, getLineEndPoint } from '../helper';
+import {
+  adjustLineFromCenter,
+  convertSize,
+  getIntersection,
+  getLineEndPoint,
+  getLinePoints,
+  setLineStartEndPoint,
+} from '../helper';
 import { DrawBottom } from './draw-bottom';
 
 interface BottomLineOptions extends BasicDrawOptions {
@@ -10,22 +17,24 @@ interface BottomLineOptions extends BasicDrawOptions {
   start: Point;
   onFinish?: () => void;
   onChange?: () => void;
+  onModify?: (newValue: Point[], oldValue: Point[]) => void;
 }
 
 /** 底边类，用于绘制和管理底边线 */
 class BottomLine extends BasicDraw {
   private line: Line;
+  private hintInput: HintInput;
+  private angleAuxiliaryLine: AngleAuxiliaryLine;
+  private drawBottom: DrawBottom;
   defaultColor = 'rgb(150,197,250)';
   hitColor = 'rgb(225,33,0)';
   finishColor = 'rgb(140,140,140)';
   hoverColor = 'rgb(175,210,250)';
   selectedColor = 'rgb(110,170,250)';
-  hintInput: HintInput;
-  angleAuxiliaryLine: AngleAuxiliaryLine;
   hit: boolean = false;
-  finishCallback: (() => void) | undefined;
+  finishCallback: BottomLineOptions['onFinish'];
+  modifyCallback: BottomLineOptions['onModify'];
   start: Point;
-  drawBottom: DrawBottom;
 
   constructor(options: BottomLineOptions) {
     super(options);
@@ -33,6 +42,7 @@ class BottomLine extends BasicDraw {
     this.start = options.start;
     this.drawBottom = options.drawBottom;
     this.finishCallback = options.onFinish;
+    this.modifyCallback = options.onModify;
 
     // 初始化线条对象
     this.line = new Line({
@@ -52,9 +62,16 @@ class BottomLine extends BasicDraw {
       autoFocus: true,
       onChange: (value) => {
         if (this.line) {
-          this.line.width = Number(value);
-          this.getEndPoint();
-          this.finish();
+          if (this.isSelected()) {
+            const oldValue = getLinePoints(this.line);
+            const [start, end] = adjustLineFromCenter(this.line, Number(value));
+            setLineStartEndPoint(this.line, start, end);
+            this.normal();
+            this.modifyCallback?.([start, end], oldValue);
+          } else {
+            this.line.width = Number(value);
+            this.finish();
+          }
         }
       },
     });
@@ -71,9 +88,11 @@ class BottomLine extends BasicDraw {
     // 监听线条属性变化事件
     this.line.on(PropertyEvent.CHANGE, (e) => {
       if (!['rotation', 'width'].includes(e.attrName)) return;
+      if (this.isFinish()) return;
+      if (this.isSelected()) return;
 
       // 更新输入框信息
-      this.hintInput.show(this.line, this.line.width);
+      this.showHintInput();
 
       // 更新辅助线信息
       this.angleAuxiliaryLine.show(this.line);
@@ -130,17 +149,18 @@ class BottomLine extends BasicDraw {
     return new Bounds(this.line.getBounds());
   }
 
+  /** 设置底边起终点 */
+  setStartEndPoint(start: Point, end: Point) {
+    setLineStartEndPoint(this.line, start, end);
+  }
+
   /** 绘制线条 */
   drawing(point: Point) {
     this.line.set({
-      // 需要减去起点坐标
-      toPoint: {
-        x: point.x - (this.line.x ?? 0),
-        y: point.y - (this.line.y ?? 0),
-      },
       className: BottomLineStatus.Drawing,
       stroke: this.hit ? this.hitColor : this.defaultColor,
     });
+    setLineStartEndPoint(this.line, this.start, point);
   }
 
   /** 完成绘制 */
@@ -164,29 +184,51 @@ class BottomLine extends BasicDraw {
     );
 
     this.angleAuxiliaryLine.remove();
-
     this.finishCallback?.();
   }
 
   /** 终止绘制 */
   abort() {
     this.remove();
-    this.hintInput.hide();
+    this.hideHintInput();
     this.angleAuxiliaryLine.remove();
   }
 
   /** 移除线条 */
   remove() {
-    this.hintInput.hide();
+    this.hideHintInput();
     this.angleAuxiliaryLine.remove();
     this.line?.remove();
   }
 
+  /** 显示提示  */
+  showHintInput() {
+    this.hintInput.show(this.line, this.line.width);
+  }
+
+  /** 隐藏提示  */
+  hideHintInput() {
+    this.hintInput.hide();
+  }
+
   /* 选中 */
   select() {
+    if (this.isSelected()) return;
+
     this.line.set({
       stroke: this.selectedColor,
     });
+    this.showHintInput();
+  }
+
+  /** 是否选中 */
+  isSelected() {
+    return this.line.stroke === this.selectedColor;
+  }
+
+  /** 是否结束 */
+  isFinish() {
+    return this.line.stroke === this.finishColor;
   }
 
   /* 经过 */
@@ -201,16 +243,17 @@ class BottomLine extends BasicDraw {
     this.line.set({
       stroke: this.finishColor,
     });
+    this.hideHintInput();
   }
 
   /** 闭合 */
   close() {
-    this.hintInput.show(this.line, this.line.width, true);
+    this.showHintInput();
   }
 
   /** 开放 */
   open() {
-    this.hintInput.hide();
+    this.hideHintInput();
   }
 }
 

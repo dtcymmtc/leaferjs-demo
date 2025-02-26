@@ -88,6 +88,9 @@ class DrawBottom extends BasicDraw {
       debug: this.debug,
       drawBottom: this,
       start: point,
+      onModify: (newValue, olValue) => {
+        this.bottomLineGroup.modifyBottomLine(newValue, olValue);
+      },
       onFinish: () => {
         if (this.currentBottomLine) {
           const point = this.currentBottomLine.getEndPoint();

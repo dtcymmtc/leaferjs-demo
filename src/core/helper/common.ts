@@ -62,6 +62,15 @@ export const getLineDirection = (line: Line) => {
   return 'unknown';
 };
 
+/** 获取线段的起终点坐标 */
+export const getLinePoints = (line: Line) => {
+  if (line.points?.length) return line.points as Point[];
+  const x1 = line.getComputedAttr('x') ?? 0;
+  const y1 = line.getComputedAttr('y') ?? 0;
+
+  return [new Point(x1, y1), getLineEndPoint(line)];
+};
+
 /** 获取线段的终点坐标 */
 export const getLineEndPoint = (line: Line) => {
   const x1 = line.getComputedAttr('x') ?? 0;
@@ -73,6 +82,18 @@ export const getLineEndPoint = (line: Line) => {
   const x2 = x1 + width * Math.cos(radians);
   const y2 = y1 + width * Math.sin(radians);
   return new Point(round(x2), round(y2));
+};
+
+/** 设置线段的起终点 */
+export const setLineStartEndPoint = (line: Line, start: Point, end: Point) => {
+  line.set({
+    x: start.x,
+    y: start.y,
+    toPoint: {
+      x: end.x - start.x,
+      y: end.y - start.y,
+    },
+  });
 };
 
 /** 计算两条线段之间的夹角 */
@@ -97,7 +118,7 @@ export const convertSize = (length: number) => {
 };
 
 /** 获取多边形的质心 */
-export function getPolygonCentroid(points: Point[]): Point {
+export const getPolygonCentroid = (points: Point[]): Point => {
   let area = 0;
   let cx = 0;
   let cy = 0;
@@ -117,4 +138,52 @@ export function getPolygonCentroid(points: Point[]): Point {
     x: cx * factor,
     y: cy * factor,
   });
-}
+};
+
+/**
+ * 根据给定的线段起点与终点，在保持中心点和方向不变的情况下，调整线段长度
+ * @param start - 原始线段起点
+ * @param end   - 原始线段终点
+ * @param newLength - 新的线段长度
+ * @returns 调整后新的起点与终点坐标
+ */
+export const adjustLineFromCenter = (line: Line, newLength: number): Point[] => {
+  const [start, end] = getLinePoints(line);
+
+  const dx = end.x - start.x;
+  const dy = end.y - start.y;
+  // 原始线段长度
+  const oldLength = Math.hypot(dx, dy);
+
+  // 线段长度为0时，直接在中心点前后平分
+  if (oldLength === 0) {
+    const half = newLength / 2;
+    return [
+      new Point({ x: round(start.x - half), y: round(start.y) }),
+      new Point({ x: round(start.x + half), y: round(start.y) }),
+    ];
+  }
+
+  // 中心点
+  const midX = (start.x + end.x) / 2;
+  const midY = (start.y + end.y) / 2;
+
+  // 方向向量
+  const ux = dx / oldLength;
+  const uy = dy / oldLength;
+
+  // 新线段一半长度
+  const halfLen = newLength / 2;
+
+  // 计算新的起点与终点
+  const newStart = {
+    x: round(midX - ux * halfLen),
+    y: round(midY - uy * halfLen),
+  };
+  const newEnd = {
+    x: round(midX + ux * halfLen),
+    y: round(midY + uy * halfLen),
+  };
+
+  return [new Point(newStart), new Point(newEnd)];
+};

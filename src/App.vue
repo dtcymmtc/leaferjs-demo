@@ -5,8 +5,9 @@
     <Button @click="drawBottom.reset">重置</Button>
     <Button @click="drawBottom.undo">撤销</Button>
     <Button @click="drawBottom.exportData">导出数据</Button>
-    <Button @click="importData">导入矩形腔体</Button>
-    <Button @click="importBigData">导入复杂腔体</Button>
+    <Button v-for="(item, index) in dataList" :key="index" @click="importData(item)">
+      导入数据{{ index + 1 }}
+    </Button>
   </Space>
 </template>
 <script setup lang="ts">
@@ -47,30 +48,65 @@ const drawBottom = new DrawBottom({
   snap,
 });
 
-const importData = () => {
-  drawBottom.importData([
-    {
-      x: 0,
-      y: 0,
-    },
-    {
-      x: 5000,
-      y: 0,
-    },
-    {
-      x: 5000,
-      y: -5000,
-    },
-    {
-      x: 0,
-      y: -5000,
-    },
-  ]);
-};
+type DataItem = Array<{
+  x: number;
+  y: number;
+}>;
 
-// 导入复杂数据
-const importBigData = () => {
-  drawBottom.importData([
+const dataList: DataItem[] = [
+  [
+    {
+      x: 0,
+      y: 0,
+    },
+    {
+      x: 5000,
+      y: 0,
+    },
+    {
+      x: 5000,
+      y: -5000,
+    },
+    {
+      x: 0,
+      y: -5000,
+    },
+  ],
+  [
+    {
+      x: 2600,
+      y: 1656,
+    },
+    {
+      x: 2600,
+      y: 4656,
+    },
+    {
+      x: 8600,
+      y: 4656,
+    },
+    {
+      x: 8600,
+      y: 1656,
+    },
+    {
+      x: 6600,
+      y: 1656,
+    },
+    {
+      x: 6600,
+      y: 3156,
+    },
+    {
+      x: 4600,
+      y: 3156,
+    },
+    {
+      x: 4600,
+      y: 1656,
+    },
+  ],
+  [
     {
       x: 1696,
       y: 1088,
@@ -203,6 +239,10 @@ const importBigData = () => {
       x: 2560,
       y: 1704,
     },
-  ]);
+  ],
+];
+
+const importData = (dataItem: DataItem) => {
+  drawBottom.importData(dataItem);
 };
 </script>

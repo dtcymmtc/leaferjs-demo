@@ -1,7 +1,7 @@
 import { Ellipse, Point, PointerEvent, Polygon, UI, UIEvent } from 'leafer-editor';
 import { BasicDraw, type BasicDrawOptions } from '../basic/basic-draw';
 import { DEFAULT_BOTTOM_LINE_WIDTH } from '../constants';
-import { convertSize } from '../helper';
+import { convertSize, getLinePoints } from '../helper';
 import { BottomLine } from './bottom-line';
 import { EdgeAnnotations } from './edge-annotations';
 
@@ -73,6 +73,7 @@ class BottomLineGroup extends BasicDraw {
         bottomLine.select();
         return;
       }
+
       if (bottomLine === this.hoverBottomLine) {
         bottomLine.hover();
         return;
@@ -138,6 +139,42 @@ class BottomLineGroup extends BasicDraw {
 
     // 移除最后一个重复的起点（闭合点）
     return path.slice(0, -1);
+  }
+
+  /** 修改底边重新闭合 */
+  modifyBottomLine(newValue: Point[], oldValue: Point[]) {
+    const [newStart, newEnd] = newValue;
+    const [oldStart, oldEnd] = oldValue;
+
+    this.bottomLines.forEach((bottomLine) => {
+      const [start, end] = getLinePoints(bottomLine.getLine());
+
+      if (start.x === oldStart.x && start.y === oldStart.y) {
+        bottomLine.setStartEndPoint(newStart, end);
+        return;
+      }
+
+      if (start.x === oldEnd.x && start.y === oldEnd.y) {
+        bottomLine.setStartEndPoint(newEnd, end);
+        return;
+      }
+
+      if (end.x === oldStart.x && end.y === oldStart.y) {
+        bottomLine.setStartEndPoint(start, newStart);
+        return;
+      }
+
+      if (end.x === oldEnd.x && end.y === oldEnd.y) {
+        bottomLine.setStartEndPoint(start, newEnd);
+        return;
+      }
+    });
+
+    this.hoverBottomLine = undefined;
+    this.selectedBottomLine = undefined;
+
+    this.update();
+    this.updateBottomLines();
   }
 
   /**
@@ -256,6 +293,7 @@ class BottomLineGroup extends BasicDraw {
       app: this.app,
       snap: this.snap,
       debug: this.debug,
+      type: 'polygon',
     });
 
     this.closedCallback?.();

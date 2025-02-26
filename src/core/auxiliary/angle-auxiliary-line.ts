@@ -20,7 +20,7 @@ class AngleAuxiliaryLine extends BasicDraw {
   curve: Line;
   hintInput: HintInput | undefined;
   suffix: string | undefined;
-  defaultColor = 'rgb(153,153,153)';
+  defaultColor = 'rgb(89,89,89)';
   parallelColor = 'rgb(22,217,168)';
 
   constructor(options: AngleAuxiliaryLineOptions) {
@@ -32,7 +32,7 @@ class AngleAuxiliaryLine extends BasicDraw {
       y: options.y,
       strokeWidth: 0,
       stroke: this.defaultColor,
-      dashPattern: [10, 10],
+      dashPattern: [convertSize(10), convertSize(10)],
     });
 
     // 初始化曲线对象
@@ -52,6 +52,7 @@ class AngleAuxiliaryLine extends BasicDraw {
       snap: this.snap,
       debug: this.debug,
       suffix: '°',
+      type: 'arc',
     });
   }
 
