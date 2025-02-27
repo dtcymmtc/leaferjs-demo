@@ -227,3 +227,18 @@ export const adjustLineFromCenter = (line: Line, newLength: number): Point[] => 
 
   return [new Point(newStart), new Point(newEnd)];
 };
+
+/**
+ * 计算多边形带符号面积（用于判断多边形走向）
+ * @param {Point[]} vertices - 多边形顶点数组
+ * @returns {number} 面积的2倍（符号指示方向）
+ * ▷ 正值表示逆时针（CCW），负值表示顺时针（CW）
+ */
+export const calculateAreaSign = (vertices: Point[]): number => {
+  let area = 0;
+  for (let i = 0; i < vertices.length; i++) {
+    const j = (i + 1) % vertices.length;
+    area += vertices[i].x * vertices[j].y - vertices[j].x * vertices[i].y;
+  }
+  return area;
+};

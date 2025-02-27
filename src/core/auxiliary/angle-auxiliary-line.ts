@@ -120,7 +120,7 @@ class AngleAuxiliaryLine extends BasicDraw {
     });
 
     // 显示提示输入框，显示线条之间的夹角
-    this.hintInput?.show(this.curve, getAngleBetweenLines(line, this.line));
+    this.hintInput?.showInput(this.curve, getAngleBetweenLines(line, this.line));
 
     // 设置输入框的偏移值
     if (direction.includes('right')) {
@@ -134,7 +134,7 @@ class AngleAuxiliaryLine extends BasicDraw {
   remove() {
     this.line?.remove();
     this.curve?.remove();
-    this.hintInput?.hide();
+    this.hintInput?.hideInput();
   }
 }
 

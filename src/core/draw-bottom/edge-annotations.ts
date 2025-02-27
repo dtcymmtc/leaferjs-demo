@@ -1,7 +1,7 @@
 import { Box, Line, Point, UI } from 'leafer-editor';
 import { BasicDraw, type BasicDrawOptions } from '../basic/basic-draw';
 import { DEFAULT_BOTTOM_LINE_WIDTH } from '../constants';
-import { convertSize, getLineDirection, setLineStartEndPoint } from '../helper';
+import { calculateAreaSign, convertSize, getLineDirection, setLineStartEndPoint } from '../helper';
 
 /**
  * @typedef {Object} AnnotationLabel
@@ -36,13 +36,20 @@ type Annotations = {
  * @property {'polygon' | 'line' | 'arc'} type - 图形类型
  * @property {boolean} [showLabel] - 是否显示标签
  * @property {boolean} [showLine] - 是否显示线条
+ * @property {boolean} [isCCW] - 是否逆时针
  */
 interface EdgeAnnotationsOptions extends BasicDrawOptions {
-  points: Point[];
-  type: 'polygon' | 'line' | 'arc';
+  points?: Point[];
+  type?: 'polygon' | 'line' | 'arc';
   showLabel?: boolean;
   showLine?: boolean;
+  isCCW?: boolean;
 }
+
+export type EdgeAnnotationsUpdateOptions = Pick<
+  EdgeAnnotationsOptions,
+  'points' | 'type' | 'showLabel' | 'showLine' | 'isCCW'
+>;
 
 /**
  * 边标注工具类，用于在图形边线外侧生成尺寸标注
@@ -60,6 +67,12 @@ class EdgeAnnotations extends BasicDraw {
 
   private showLine: boolean;
 
+  private type: EdgeAnnotationsOptions['type'];
+
+  private points: Required<EdgeAnnotationsOptions>['points'];
+
+  private isCCW: boolean;
+
   annotations: Annotations = { lines: [], labels: [] };
 
   constructor(options: EdgeAnnotationsOptions) {
@@ -67,32 +80,34 @@ class EdgeAnnotations extends BasicDraw {
 
     this.showLabel = options.showLabel ?? true;
     this.showLine = options.showLine ?? true;
+    this.type = options.type;
+    this.points = options.points ?? [];
+    this.isCCW = options.isCCW ?? false;
 
-    if (options.type === 'polygon') {
-      this.annotations = this.generatePolygonAnnotations(options.points);
-      this.renderAnnotations(this.annotations);
-    } else if (options.type === 'line') {
-      this.annotations = this.generateLineAnnotations(options.points);
-      this.renderAnnotations(this.annotations);
-    } else if (options.type === 'arc') {
-      this.annotations = this.generateArcAnnotations(options.points);
-      this.renderAnnotations(this.annotations);
-    }
+    this.update();
   }
 
-  /**
-   * 计算多边形带符号面积（用于判断多边形走向）
-   * @param {Point[]} vertices - 多边形顶点数组
-   * @returns {number} 面积的2倍（符号指示方向）
-   * ▷ 正值表示逆时针（CCW），负值表示顺时针（CW）
-   */
-  private calculateAreaSign(vertices: Point[]): number {
-    let area = 0;
-    for (let i = 0; i < vertices.length; i++) {
-      const j = (i + 1) % vertices.length;
-      area += vertices[i].x * vertices[j].y - vertices[j].x * vertices[i].y;
+  update(options?: EdgeAnnotationsUpdateOptions) {
+    this.clear();
+
+    this.points = options?.points ?? this.points;
+    this.type = options?.type ?? this.type;
+    this.showLabel = options?.showLabel ?? this.showLabel;
+    this.showLine = options?.showLine ?? this.showLine;
+    this.isCCW = options?.isCCW ?? this.isCCW;
+
+    if (this.points.length < 2) return;
+
+    if (this.type === 'polygon') {
+      this.annotations = this.generatePolygonAnnotations(this.points);
+      this.renderAnnotations(this.annotations);
+    } else if (this.type === 'line') {
+      this.annotations = this.generateLineAnnotations(this.points);
+      this.renderAnnotations(this.annotations);
+    } else if (this.type === 'arc') {
+      this.annotations = this.generateArcAnnotations(this.points);
+      this.renderAnnotations(this.annotations);
     }
-    return area;
   }
 
   /**
@@ -105,7 +120,7 @@ class EdgeAnnotations extends BasicDraw {
    * 3. 计算每条边对应的中点标签位置和旋转角度
    */
   private generatePolygonAnnotations(vertices: Point[]): Annotations {
-    const area = this.calculateAreaSign(vertices);
+    const area = calculateAreaSign(vertices);
     const isCCW = area > 0; // 逆时针标志
 
     const annotations: Annotations = { lines: [], labels: [] };
@@ -129,7 +144,7 @@ class EdgeAnnotations extends BasicDraw {
    * @returns {Annotations} 包含偏移线和标签数据的标注信息
    */
   private generateLineAnnotations(vertices: Point[]): Annotations {
-    const result = this.generateAnnotations(vertices[0], vertices[1], false);
+    const result = this.generateAnnotations(vertices[0], vertices[1], this.isCCW);
 
     return {
       lines: [result.line],
@@ -233,6 +248,7 @@ class EdgeAnnotations extends BasicDraw {
    */
   private generateAnnotations(A: Point, B: Point, isCCW: boolean) {
     const effectiveOffset = this.offset + this.strokeWidth / 2;
+    const labelEffectiveOffset = this.offset + this.strokeWidth / 2 + convertSize(10);
 
     // 计算边向量及长度
     const dx = B.x - A.x;
@@ -250,10 +266,16 @@ class EdgeAnnotations extends BasicDraw {
     const A_prime = { x: A.x + offsetX, y: A.y + offsetY };
     const B_prime = { x: B.x + offsetX, y: B.y + offsetY };
 
+    // 计算平行偏移后的顶点坐标
+    const labelOffsetX = labelEffectiveOffset * nx;
+    const labelOffsetY = labelEffectiveOffset * ny;
+    const label_A_prime = { x: A.x + labelOffsetX, y: A.y + labelOffsetY };
+    const label_B_prime = { x: B.x + labelOffsetX, y: B.y + labelOffsetY };
+
     // 计算标签参数
-    const midPoint = {
-      x: (A_prime.x + B_prime.x) / 2,
-      y: (A_prime.y + B_prime.y) / 2,
+    const labelPoint = {
+      x: (label_A_prime.x + label_B_prime.x) / 2,
+      y: (label_A_prime.y + label_B_prime.y) / 2,
     };
     const angleRad = Math.atan2(dy, dx);
     const angleDeg = (angleRad * 180) / Math.PI; // 转换为度数
@@ -277,7 +299,7 @@ class EdgeAnnotations extends BasicDraw {
     return {
       line: [new Point(A_prime), new Point(B_prime)],
       label: {
-        position: new Point(midPoint),
+        position: new Point(labelPoint),
         length,
         direction: getLineDirection(line),
         angle: angleDeg,
@@ -354,22 +376,22 @@ class EdgeAnnotations extends BasicDraw {
     });
 
     // 创建边长标签
-    annotations.labels.forEach((label, index) => {
-      const [start] = annotations.lines[index];
+    annotations.labels.forEach((label) => {
       const textContent = `${label.length.toFixed(0)}`; // 取整显示
 
       const ui = new Box({
-        x: start.x,
-        y: start.y,
-        width: label.length, // 文本框宽度与边长一致
+        x: label.position.x,
+        y: label.position.y,
+        width: convertSize(50), // 文本框宽度与边长一致
         height: convertSize(24), // 固定高度
         rotation: label.angle, // 文本旋转角度
+        around: 'center',
         children: [
           {
             tag: 'Text',
             text: textContent,
             height: convertSize(24), // 固定高度
-            width: label.length,
+            width: convertSize(50),
             rotation: label.labelAngle,
             origin: 'center',
             fontSize: convertSize(12),
@@ -380,6 +402,7 @@ class EdgeAnnotations extends BasicDraw {
           },
         ],
       });
+
       this.app.tree.add(ui);
       this.uiData.push(ui);
     });

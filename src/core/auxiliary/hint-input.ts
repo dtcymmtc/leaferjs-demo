@@ -1,6 +1,9 @@
 import { Line } from 'leafer-editor';
 import { BasicDraw, type BasicDrawOptions } from '../basic/basic-draw';
-import { EdgeAnnotations } from '../draw-bottom/edge-annotations';
+import {
+  EdgeAnnotations,
+  type EdgeAnnotationsUpdateOptions,
+} from '../draw-bottom/edge-annotations';
 import { getLinePoints } from '../helper';
 
 interface HintInputOptions extends BasicDrawOptions {
@@ -18,7 +21,7 @@ class HintInput extends BasicDraw {
   timer: number | undefined = undefined;
   autoFocus = false;
   suffix: string | undefined;
-  edgeAnnotations: EdgeAnnotations | undefined;
+  edgeAnnotations: EdgeAnnotations;
   type: Required<HintInputOptions>['type'];
 
   /**
@@ -33,36 +36,33 @@ class HintInput extends BasicDraw {
     this.type = options.type ?? 'line';
     this.autoFocus = options?.autoFocus ?? false;
     this.suffix = options?.suffix;
+    this.edgeAnnotations = new EdgeAnnotations({
+      app: this.app,
+      snap: this.snap,
+      debug: this.debug,
+      points: [],
+      type: this.type,
+      showLabel: false,
+      showLine: this.type === 'line',
+    });
 
-    this.input.tabIndex = 1;
-    this.input.className = 'ant-input';
-    this.input.style.position = 'absolute';
     this.input.style.display = 'none';
-    this.input.style.borderRadius = '2px';
-    this.input.style.textAlign = 'center';
-    this.input.style.height = '22px';
-    this.input.style.width = '50px';
-    this.input.style.padding = '0';
-    this.input.style.transform = 'translate(-50%, 0)';
-
     this.input.addEventListener('keydown', (event) => {
       if (event.key === 'Enter') {
-        this.hide();
+        this.hideInput();
         options?.onChange?.(this.input.value);
       }
     });
   }
 
-  /** 隐藏输入框 */
-  hide() {
-    this.edgeAnnotations?.clear();
-    this.input.style.display = 'none';
-
-    if (this.timer) {
-      clearTimeout(this.timer);
-    }
-
-    this.input.blur();
+  /**
+   * 设置输入框的偏移值
+   * @param {number} x - 水平偏移值
+   * @param {number} y - 垂直偏移值
+   */
+  setOffset(x: number, y: number) {
+    this.input.style.marginTop = `${y}px`;
+    this.input.style.marginLeft = `${x}px`;
   }
 
   /**
@@ -71,21 +71,14 @@ class HintInput extends BasicDraw {
    * @param {number|string} [num] - 显示的数值
    * @param {boolean} [disabled=false] - 是否禁用输入框
    */
-  show(line: Line, num?: number | string, disabled = false) {
+  showInput(line: Line, num?: number | string, disabled = false) {
     if (!num) {
-      this.hide();
+      this.hideInput();
       return;
     }
 
-    this.edgeAnnotations?.clear();
-    this.edgeAnnotations = new EdgeAnnotations({
-      app: this.app,
-      snap: this.snap,
-      debug: this.debug,
-      points: getLinePoints(line),
-      type: this.type,
+    this.showAnnotation(line, {
       showLabel: false,
-      showLine: this.type === 'line',
     });
 
     const label = this.edgeAnnotations.annotations.labels[0];
@@ -96,6 +89,15 @@ class HintInput extends BasicDraw {
     }
     this.input.blur();
 
+    this.input.tabIndex = 1;
+    this.input.className = 'ant-input';
+    this.input.style.position = 'absolute';
+    this.input.style.borderRadius = '2px';
+    this.input.style.textAlign = 'center';
+    this.input.style.height = '20px';
+    this.input.style.width = '50px';
+    this.input.style.padding = '0';
+    this.input.style.transform = 'translate(-50%, -50%)';
     this.input.style.display = 'block';
     this.input.style.left = `${position.x}px`;
     this.input.style.top = `${position.y}px`;
@@ -119,14 +121,28 @@ class HintInput extends BasicDraw {
     }
   }
 
-  /**
-   * 设置输入框的偏移值
-   * @param {number} x - 水平偏移值
-   * @param {number} y - 垂直偏移值
-   */
-  setOffset(x: number, y: number) {
-    this.input.style.marginTop = `${y}px`;
-    this.input.style.marginLeft = `${x}px`;
+  /** 隐藏输入框 */
+  hideInput() {
+    this.input.style.display = 'none';
+
+    if (this.timer) {
+      clearTimeout(this.timer);
+    }
+
+    this.input.blur();
+  }
+
+  /** 显示标注  */
+  showAnnotation(line: Line, options?: EdgeAnnotationsUpdateOptions) {
+    this.edgeAnnotations.update({
+      points: getLinePoints(line),
+      ...options,
+    });
+  }
+
+  /** 隐藏标注  */
+  hideAnnotation() {
+    this.edgeAnnotations.clear();
   }
 }
 

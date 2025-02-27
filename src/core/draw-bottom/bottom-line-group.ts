@@ -1,9 +1,8 @@
 import { Ellipse, Point, PointerEvent, Polygon, UI, UIEvent } from 'leafer-editor';
 import { BasicDraw, type BasicDrawOptions } from '../basic/basic-draw';
 import { DEFAULT_BOTTOM_LINE_WIDTH } from '../constants';
-import { convertSize, getLinePoints } from '../helper';
+import { calculateAreaSign, convertSize, getLinePoints } from '../helper';
 import { BottomLine } from './bottom-line';
-import { EdgeAnnotations } from './edge-annotations';
 
 /**
  * @typedef {Object} BottomLineGroupOptions
@@ -29,8 +28,6 @@ class BottomLineGroup extends BasicDraw {
   drawablePoints: UI[] = [];
   /** 连接点 */
   linkPoints: UI[] = [];
-  /** 边标注 */
-  edgeAnnotations: EdgeAnnotations | undefined = undefined;
   /** 是否闭合 */
   closed = false;
   /** 闭合回调函数 */
@@ -250,8 +247,6 @@ class BottomLineGroup extends BasicDraw {
       }
     }
 
-    // 如果所有底边线都已绘制且没有可绘制点，则标记为闭合
-    this.edgeAnnotations?.clear();
     if (this.bottomLines.length > 0 && this.drawablePoints.length === 0) {
       this.close();
     } else {
@@ -294,6 +289,9 @@ class BottomLineGroup extends BasicDraw {
   /** 图形闭合 */
   close() {
     const polygonPoints = this.sortPolygonPoints();
+    const area = calculateAreaSign(polygonPoints);
+    const isCCW = area > 0; // 逆时针标志
+
     this.closed = true;
     this.snap.clearTargetPoints();
     this.closedPolygon.set({
@@ -301,12 +299,11 @@ class BottomLineGroup extends BasicDraw {
       visible: true,
     });
 
-    this.edgeAnnotations = new EdgeAnnotations({
-      points: polygonPoints,
-      app: this.app,
-      snap: this.snap,
-      debug: this.debug,
-      type: 'polygon',
+    this.bottomLines.forEach((bottomLine) => {
+      bottomLine.showAnnotation({
+        showLabel: true,
+        isCCW,
+      });
     });
 
     this.closedCallback?.();
@@ -316,6 +313,10 @@ class BottomLineGroup extends BasicDraw {
   open() {
     this.closed = false;
     this.closedPolygon.set({ points: [], visible: false });
+
+    this.bottomLines.forEach((bottomLine) => {
+      bottomLine.hideAnnotation();
+    });
   }
 }
 

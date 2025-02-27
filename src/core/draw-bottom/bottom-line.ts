@@ -11,6 +11,7 @@ import {
   setLineStartEndPoint,
 } from '../helper';
 import { DrawBottom } from './draw-bottom';
+import type { EdgeAnnotationsUpdateOptions } from './edge-annotations';
 
 /**
  * @typedef {Object} BottomLineOptions
@@ -181,7 +182,8 @@ class BottomLine extends BasicDraw {
       stroke: this.finishColor,
       className: BottomLineStatus.Finish,
     });
-    this.hintInput.hide();
+    this.hintInput.hideInput();
+    this.hintInput.hideAnnotation();
     this.debug.log(
       `--------------底边${this.drawBottom.bottomLineGroup.bottomLines.length + 1}--------------`,
     );
@@ -209,18 +211,29 @@ class BottomLine extends BasicDraw {
   /** 移除线条 */
   remove() {
     this.hideHintInput();
+    this.hideAnnotation();
     this.angleAuxiliaryLine.remove();
     this.line?.remove();
   }
 
   /** 显示提示  */
   showHintInput() {
-    this.hintInput.show(this.line, this.line.width);
+    this.hintInput.showInput(this.line, this.line.width);
   }
 
   /** 隐藏提示  */
   hideHintInput() {
-    this.hintInput.hide();
+    this.hintInput.hideInput();
+  }
+
+  /** 显示标注  */
+  showAnnotation(options?: EdgeAnnotationsUpdateOptions) {
+    this.hintInput.showAnnotation(this.line, options);
+  }
+
+  /** 隐藏标注 */
+  hideAnnotation() {
+    this.hintInput.hideAnnotation();
   }
 
   /* 选中 */
@@ -256,6 +269,9 @@ class BottomLine extends BasicDraw {
       stroke: this.finishColor,
     });
     this.hideHintInput();
+    this.showAnnotation({
+      showLabel: true,
+    });
   }
 
   /** 闭合 */

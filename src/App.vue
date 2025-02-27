@@ -240,6 +240,24 @@ const dataList: DataItem[] = [
       y: 1704,
     },
   ],
+  [
+    {
+      x: 5424,
+      y: 4168,
+    },
+    {
+      x: 3088,
+      y: 4168,
+    },
+    {
+      x: 3088,
+      y: 2120,
+    },
+    {
+      x: 5424,
+      y: 2120,
+    },
+  ],
 ];
 
 const importData = (dataItem: DataItem) => {
