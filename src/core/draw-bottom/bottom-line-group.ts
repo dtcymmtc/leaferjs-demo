@@ -294,14 +294,20 @@ class BottomLineGroup extends BasicDraw {
 
     this.closed = true;
     this.snap.clearTargetPoints();
+
     this.closedPolygon.set({
       points: polygonPoints,
       visible: true,
     });
 
-    this.bottomLines.forEach((bottomLine) => {
+    this.bottomLines.forEach((bottomLine, index) => {
       bottomLine.showAnnotation({
         showLabel: true,
+        // 保证绘制方向正确
+        points: [
+          polygonPoints[index],
+          polygonPoints[index + 1 === polygonPoints.length ? 0 : index + 1],
+        ],
         isCCW,
       });
     });

@@ -228,6 +228,11 @@ class BottomLine extends BasicDraw {
 
   /** 显示标注  */
   showAnnotation(options?: EdgeAnnotationsUpdateOptions) {
+    // 如果有传入点，则使用传入的点，保证绘制方向正确
+    if (options?.points) {
+      this.setStartEndPoint(options.points[0], options.points[1]);
+    }
+
     this.hintInput.showAnnotation(this.line, options);
   }
 
@@ -276,7 +281,10 @@ class BottomLine extends BasicDraw {
 
   /** 闭合 */
   close() {
-    this.showHintInput();
+    this.hideHintInput();
+    this.showAnnotation({
+      showLabel: true,
+    });
   }
 
   /** 开放 */
