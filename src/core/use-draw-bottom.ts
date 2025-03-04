@@ -1,14 +1,21 @@
 import { App } from 'leafer-editor';
 import { DotMatrix } from 'leafer-x-dot-matrix';
-import { ref, watch, type Ref } from 'vue';
+import { ref, shallowRef, watch, type Ref } from 'vue';
 import * as Constants from './constants';
 import { DrawBottom } from './draw-bottom';
 import { convertSize } from './helper';
 import { Debug } from './helper/debug';
 import { Snap } from './snap';
 
+/**
+ * 使用底部绘制功能的钩子函数
+ * @param {Ref<HTMLElement | undefined>} eleRef - 元素引用
+ * @returns {Object} 包含导入、导出、重置、撤销、恢复等功能的对象
+ */
 export const useDrawBottom = (eleRef: Ref<HTMLElement | undefined>) => {
-  const drawBottom = ref<DrawBottom>();
+  const drawBottom = shallowRef<DrawBottom>();
+  const canUndo = ref(false);
+  const canRedo = ref(false);
 
   const init = () => {
     const app = new App({
@@ -40,6 +47,10 @@ export const useDrawBottom = (eleRef: Ref<HTMLElement | undefined>) => {
       app,
       debug,
       snap,
+      onHistoryChange: (undoStatus, redoStatus) => {
+        canRedo.value = redoStatus;
+        canUndo.value = undoStatus;
+      },
     });
   };
 
@@ -71,10 +82,24 @@ export const useDrawBottom = (eleRef: Ref<HTMLElement | undefined>) => {
     return drawBottom.value?.undo();
   };
 
+  const redo: DrawBottom['redo'] = () => {
+    return drawBottom.value?.redo();
+  };
+
   return {
+    /** 导入数据 */
     importData,
+    /** 导出数据 */
     exportData,
+    /** 重置绘制状态 */
     reset,
+    /** 撤销上一步操作 */
     undo,
+    /** 恢复上一步撤销的操作 */
+    redo,
+    /** 是否可以撤回 */
+    canUndo,
+    /** 是否可以恢复 */
+    canRedo,
   };
 };

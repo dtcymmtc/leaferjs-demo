@@ -3,7 +3,6 @@ import { AngleAuxiliaryLine, HintInput } from '../auxiliary';
 import { BasicDraw, type BasicDrawOptions } from '../basic/basic-draw';
 import { BottomLineStatus, DEFAULT_BOTTOM_LINE_WIDTH } from '../constants';
 import {
-  adjustLineFromCenter,
   convertSize,
   getIntersection,
   getLineEndPoint,
@@ -27,7 +26,7 @@ interface BottomLineOptions extends BasicDrawOptions {
   start: Point;
   onFinish?: () => void;
   onChange?: () => void;
-  onModify?: (newValue: Point[], oldValue: Point[]) => void;
+  onModify?: (bottomLine: BottomLine, value: number) => void;
 }
 
 /** 底边类，用于绘制和管理底边线 */
@@ -76,11 +75,8 @@ class BottomLine extends BasicDraw {
       onChange: (value) => {
         if (this.line) {
           if (this.isSelected()) {
-            const oldValue = getLinePoints(this.line);
-            const [start, end] = adjustLineFromCenter(this.line, Number(value));
-            setLineStartEndPoint(this.line, start, end);
             this.normal();
-            this.modifyCallback?.([start, end], oldValue);
+            this.modifyCallback?.(this, Number(value));
           } else {
             this.line.width = Number(value);
             this.finish();
@@ -155,6 +151,11 @@ class BottomLine extends BasicDraw {
   /** 获取线条终点 */
   getEndPoint() {
     return getLineEndPoint(this.line);
+  }
+
+  /** 获取线条起终点 */
+  getPoints() {
+    return getLinePoints(this.line);
   }
 
   /** 获取线条边界 */

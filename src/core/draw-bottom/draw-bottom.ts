@@ -7,6 +7,15 @@ import { BottomLine } from './bottom-line';
 import { BottomLineGroup } from './bottom-line-group';
 
 /**
+ * @typedef {Object} DrawBottomOptions
+ * @extends BasicDrawOptions
+ * @property {Function} [onHistoryChange] - 历史记录变化回调
+ */
+interface DrawBottomOptions extends BasicDrawOptions {
+  onHistoryChange?: (canUndo: boolean, canRedo: boolean) => void;
+}
+
+/**
  * 用于绘制腔底
  * @extends BasicDraw
  */
@@ -18,16 +27,20 @@ class DrawBottom extends BasicDraw {
   /**
    * @param {BasicDrawOptions} options - 配置选项
    */
-  constructor(options: BasicDrawOptions) {
+  constructor(options: DrawBottomOptions) {
     super(options);
 
     this.bottomLineGroup = new BottomLineGroup({
       app: this.app,
       snap: this.snap,
       debug: this.debug,
+      drawBottom: this,
       onClosed: () => {
         this.status = 'done';
         message.success('绘制完成');
+      },
+      onHistoryChange: (canUndo, canRedo) => {
+        options.onHistoryChange?.(canUndo, canRedo);
       },
     });
 
@@ -39,6 +52,7 @@ class DrawBottom extends BasicDraw {
     this.exportData = this.exportData.bind(this);
     this.importData = this.importData.bind(this);
     this.resetView = this.resetView.bind(this);
+    this.createBottomLine = this.createBottomLine.bind(this);
 
     this.app.on(PointerEvent.CLICK, this.onStart);
     this.app.on(PointerEvent.MOVE, this.onMove);
@@ -92,8 +106,8 @@ class DrawBottom extends BasicDraw {
       debug: this.debug,
       drawBottom: this,
       start: point,
-      onModify: (newValue, olValue) => {
-        this.bottomLineGroup.modifyBottomLine(newValue, olValue);
+      onModify: (bottomLine, value) => {
+        this.bottomLineGroup.modifyBottomLine(bottomLine, value);
       },
       onFinish: () => {
         if (this.currentBottomLine) {
@@ -142,15 +156,23 @@ class DrawBottom extends BasicDraw {
   }
 
   /**
-   * 撤销最后一次绘制
+   * 撤销上一步操作
    */
   undo() {
-    if (this.bottomLineGroup.bottomLines.length === 0) return;
+    this.status = 'idle';
+    this.bottomLineGroup.undo();
 
-    this.onAbort();
-    this.bottomLineGroup.pop();
+    if (this.bottomLineGroup.bottomLines.length === 0) {
+      this.reset();
+    }
+  }
 
-    if (this.bottomLineGroup.bottomLines.length === 0) this.reset();
+  /**
+   * 恢复上一步撤销的操作
+   */
+  redo() {
+    this.status = 'idle';
+    this.bottomLineGroup.redo();
   }
 
   /**
@@ -158,6 +180,7 @@ class DrawBottom extends BasicDraw {
    */
   reset() {
     this.onAbort();
+    this.bottomLineGroup.drawHistory.clear();
 
     this.status = 'init';
     this.currentBottomLine = undefined;
@@ -170,14 +193,7 @@ class DrawBottom extends BasicDraw {
    * @returns {Array<{x: number, y: number}>} 导出的数据
    */
   exportData() {
-    const result = this.bottomLineGroup.sortPolygonPoints().map((point) => {
-      return {
-        x: point.x,
-        y: point.y,
-      };
-    });
-    console.log('【数据导出】', result);
-    return result;
+    return this.bottomLineGroup.exportData();
   }
 
   /**
@@ -187,13 +203,8 @@ class DrawBottom extends BasicDraw {
   importData(data: { x: number; y: number }[]) {
     this.reset();
     this.resetView();
-    data.forEach((statPoint, index) => {
-      const endPoint = new Point(data[index + 1 === data.length ? 0 : index + 1]);
 
-      this.createBottomLine(new Point(statPoint));
-      this.currentBottomLine?.drawing(endPoint);
-      this.currentBottomLine?.finish();
-    });
+    this.bottomLineGroup.importData(data);
 
     this.app.tree.once(RenderEvent.END, () => {
       this.app.tree.zoom(this.bottomLineGroup.closedPolygon, undefined, true);

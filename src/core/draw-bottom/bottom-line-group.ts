@@ -1,16 +1,22 @@
 import { Ellipse, Point, PointerEvent, Polygon, UI, UIEvent } from 'leafer-editor';
 import { BasicDraw, type BasicDrawOptions } from '../basic/basic-draw';
 import { DEFAULT_BOTTOM_LINE_WIDTH } from '../constants';
-import { calculateAreaSign, convertSize, getLinePoints } from '../helper';
+import { adjustLineFromCenter, calculateAreaSign, convertSize, getLinePoints } from '../helper';
 import { BottomLine } from './bottom-line';
+import { DrawBottom } from './draw-bottom';
+import { DrawHistory } from './draw-history';
 
 /**
  * @typedef {Object} BottomLineGroupOptions
  * @extends BasicDrawOptions
  * @property {Function} [onClosed] - 闭合回调
+ * @property {Function} [onHistoryChange] - 历史记录变化回调
+ * @property {DrawBottom} drawBottom - 绘制腔底实例
  */
 interface BottomLineGroupOptions extends BasicDrawOptions {
   onClosed?: () => void;
+  onHistoryChange?: (canUndo: boolean, canRedo: boolean) => void;
+  drawBottom: DrawBottom;
 }
 
 const getKey = (p: Point): string => {
@@ -22,6 +28,8 @@ const getKey = (p: Point): string => {
  * @extends BasicDraw
  */
 class BottomLineGroup extends BasicDraw {
+  private drawBottom: DrawBottom;
+
   /** 底边数组 */
   bottomLines: BottomLine[] = [];
   /** 可绘制点 */
@@ -42,6 +50,8 @@ class BottomLineGroup extends BasicDraw {
   selectedBottomLine: BottomLine | undefined;
   /** 经过的底边 */
   hoverBottomLine: BottomLine | undefined;
+  /** 历史记录  */
+  drawHistory: DrawHistory;
 
   /**
    * @param {BottomLineGroupOptions} options - 配置选项
@@ -49,6 +59,13 @@ class BottomLineGroup extends BasicDraw {
   constructor(options: BottomLineGroupOptions) {
     super(options);
     this.closedCallback = options.onClosed;
+    this.drawBottom = options.drawBottom;
+    this.getPoints = this.getPoints.bind(this);
+    this.modifyBottomLine = this.modifyBottomLine.bind(this);
+    this.saveHistory = this.saveHistory.bind(this);
+    this.drawHistory = new DrawHistory({
+      onHistoryChange: options.onHistoryChange,
+    });
 
     this.app.on(PointerEvent.MOVE, (e: UIEvent) => {
       if (!this.closed) return;
@@ -101,6 +118,11 @@ class BottomLineGroup extends BasicDraw {
     });
   }
 
+  /** 保存当前状态到历史记录栈 */
+  saveHistory() {
+    this.drawHistory.saveHistory(this.getPoints());
+  }
+
   /** 获取可以生成矩形的顶点并排序  */
   sortPolygonPoints(): Point[] {
     // 构建邻接表
@@ -149,10 +171,16 @@ class BottomLineGroup extends BasicDraw {
 
   /**
    * 修改底边重新闭合
-   * @param {Point[]} newValue - 新的顶点数组
-   * @param {Point[]} oldValue - 旧的顶点数组
+   * @param {BottomLine} bottomLine - 底边
+   * @param {number} value - 底边长度
    */
-  modifyBottomLine(newValue: Point[], oldValue: Point[]) {
+  modifyBottomLine(bottomLine: BottomLine, value: number) {
+    this.saveHistory();
+
+    const oldValue = bottomLine.getPoints();
+    const newValue = adjustLineFromCenter(bottomLine.getLine(), Number(value));
+    bottomLine.setStartEndPoint(newValue[0], newValue[1]);
+
     const [newStart, newEnd] = newValue;
     const [oldStart, oldEnd] = oldValue;
 
@@ -184,7 +212,6 @@ class BottomLineGroup extends BasicDraw {
     this.selectedBottomLine = undefined;
 
     this.update();
-    this.updateBottomLines();
   }
 
   /**
@@ -254,10 +281,96 @@ class BottomLineGroup extends BasicDraw {
     }
   }
 
+  /** 获取点数据 */
+  getPoints() {
+    return this.bottomLines.map((item) => item.getPoints());
+  }
+
+  /* 读取点数据  */
+  loadPoints(points: Point[][]) {
+    this.bottomLines.forEach((line) => line.remove());
+    this.bottomLines = [];
+
+    points.forEach(([start, end]) => {
+      const newBottomLine = new BottomLine({
+        app: this.app,
+        snap: this.snap,
+        debug: this.debug,
+        start: start,
+        drawBottom: this.drawBottom,
+        onModify: (bottomLine, value) => {
+          this.modifyBottomLine(bottomLine, value);
+        },
+      });
+
+      newBottomLine.setStartEndPoint(start, end);
+      newBottomLine.finish();
+
+      this.bottomLines.push(newBottomLine);
+    });
+
+    this.update();
+  }
+
+  /**
+   * 撤销上一步操作
+   */
+  undo() {
+    const previousState = this.drawHistory.undo(this.getPoints());
+    if (previousState) {
+      this.loadPoints(previousState);
+    }
+    return previousState;
+  }
+
+  /**
+   * 恢复上一步撤销的操作
+   */
+  redo() {
+    const nextState = this.drawHistory.redo(this.getPoints());
+    if (nextState) {
+      this.loadPoints(nextState);
+    }
+    return nextState;
+  }
+
+  /**
+   * 导出数据
+   * @returns {Array<{x: number, y: number}>} 导出的数据
+   */
+  exportData() {
+    const result = this.sortPolygonPoints().map((point) => {
+      return {
+        x: point.x,
+        y: point.y,
+      };
+    });
+    console.log('【数据导出】', result);
+    return result;
+  }
+
+  /**
+   * 导入数据
+   * @param {Array<{x: number, y: number}>} data - 要导入的数据
+   */
+  importData(data: { x: number; y: number }[]) {
+    this.drawHistory.clear();
+    this.saveHistory();
+
+    const points = data.map((statPoint, index) => {
+      const endPoint = new Point(data[index + 1 === data.length ? 0 : index + 1]);
+      return [new Point(statPoint), endPoint];
+    });
+
+    this.loadPoints(points);
+  }
+
   /**
    * 移除最后一条底边线
    */
   pop(): void {
+    this.saveHistory();
+
     const bottomLine = this.bottomLines.pop();
     bottomLine?.remove();
     this.update();
@@ -268,6 +381,8 @@ class BottomLineGroup extends BasicDraw {
    * @param {BottomLine} line - 要添加的底边线
    */
   push(line: BottomLine): void {
+    this.saveHistory();
+
     this.bottomLines.push(line);
     this.update();
   }
