@@ -5,6 +5,7 @@ import { BottomLineStatus, DEFAULT_BOTTOM_LINE_WIDTH } from '../constants';
 import {
   convertSize,
   getIntersection,
+  getLineDirection,
   getLineEndPoint,
   getLinePoints,
   setLineStartEndPoint,
@@ -29,7 +30,10 @@ interface BottomLineOptions extends BasicDrawOptions {
   onModify?: (bottomLine: BottomLine, value: number) => void;
 }
 
-/** 底边类，用于绘制和管理底边线 */
+/**
+ * 底边类，用于绘制和管理底边线
+ * @extends BasicDraw
+ */
 class BottomLine extends BasicDraw {
   private line: Line;
   private hintInput: HintInput;
@@ -116,7 +120,11 @@ class BottomLine extends BasicDraw {
     this.app.tree.add(this.line);
   }
 
-  /** 判断当前线条是否与其他底边碰撞 */
+  /**
+   * 判断当前线条是否与其他底边碰撞
+   * @param {BottomLine} line - 当前线条
+   * @returns {boolean} 是否碰撞
+   */
   isHit(line: BottomLine): boolean {
     let result = false;
     for (const otherLine of this.drawBottom.bottomLineGroup.bottomLines) {
@@ -138,46 +146,96 @@ class BottomLine extends BasicDraw {
     return result;
   }
 
-  /** 获取线条对象 */
+  /**
+   * 获取线条对象
+   * @returns {Line} 线条对象
+   */
   getLine() {
     return this.line;
   }
 
-  /** 获取线条起点 */
+  /**
+   * 获取线条起点
+   * @returns {Point} 起点
+   */
   getStartPoint() {
     return new Point(this.line.x, this.line.y);
   }
 
-  /** 获取线条终点 */
+  /**
+   * 获取线条终点
+   * @returns {Point} 终点
+   */
   getEndPoint() {
     return getLineEndPoint(this.line);
   }
 
-  /** 获取线条起终点 */
+  /**
+   * 获取线条起终点
+   * @returns {Point[]} 起终点数组
+   */
   getPoints() {
     return getLinePoints(this.line);
   }
 
-  /** 获取线条边界 */
+  /**
+   * 获取线条边界
+   * @returns {Bounds} 线条边界
+   */
   getBounds() {
     return new Bounds(this.line.getBounds());
   }
 
-  /** 设置底边起终点 */
+  /**
+   * 设置底边起终点
+   * @param {Point} start - 起点
+   * @param {Point} end - 终点
+   */
   setStartEndPoint(start: Point, end: Point) {
     setLineStartEndPoint(this.line, start, end);
   }
 
-  /** 绘制线条 */
-  drawing(point: Point) {
+  /**
+   * 绘制线条
+   * @param {boolean} orthogonal - 是否正交
+   * @param {Point} point - 当前点
+   */
+  drawing(orthogonal: boolean, point: Point) {
     this.line.set({
       className: BottomLineStatus.Drawing,
       stroke: this.hit ? this.hitColor : this.defaultColor,
     });
     setLineStartEndPoint(this.line, this.start, point);
+
+    if (orthogonal) {
+      const direction = getLineDirection(this.line);
+
+      // 正交映射
+      const orthogonalMap: Record<typeof direction, number> = {
+        right: 0,
+        'right-bottom': 0,
+        'bottom-right': 90,
+        bottom: 90,
+        'bottom-left': 90,
+        'left-bottom': 180,
+        left: 180,
+        'left-top': 180,
+        'top-left': -90,
+        top: -90,
+        'top-right': -90,
+        'right-top': -0,
+        unknown: 0,
+      };
+
+      this.line.set({
+        rotation: orthogonalMap[direction],
+      });
+    }
   }
 
-  /** 完成绘制 */
+  /**
+   * 完成绘制
+   */
   finish() {
     this.line.set({
       stroke: this.finishColor,
@@ -202,14 +260,18 @@ class BottomLine extends BasicDraw {
     this.finishCallback?.();
   }
 
-  /** 终止绘制 */
+  /**
+   * 终止绘制
+   */
   abort() {
     this.remove();
     this.hideHintInput();
     this.angleAuxiliaryLine.remove();
   }
 
-  /** 移除线条 */
+  /**
+   * 移除线条
+   */
   remove() {
     this.hideHintInput();
     this.hideAnnotation();
@@ -217,17 +279,24 @@ class BottomLine extends BasicDraw {
     this.line?.remove();
   }
 
-  /** 显示提示  */
+  /**
+   * 显示提示
+   */
   showHintInput() {
     this.hintInput.showInput(this.line, this.line.width);
   }
 
-  /** 隐藏提示  */
+  /**
+   * 隐藏提示
+   */
   hideHintInput() {
     this.hintInput.hideInput();
   }
 
-  /** 显示标注  */
+  /**
+   * 显示标注
+   * @param {EdgeAnnotationsUpdateOptions} [options] - 标注更新选项
+   */
   showAnnotation(options?: EdgeAnnotationsUpdateOptions) {
     // 如果有传入点，则使用传入的点，保证绘制方向正确
     if (options?.points) {
@@ -237,12 +306,16 @@ class BottomLine extends BasicDraw {
     this.hintInput.showAnnotation(this.line, options);
   }
 
-  /** 隐藏标注 */
+  /**
+   * 隐藏标注
+   */
   hideAnnotation() {
     this.hintInput.hideAnnotation();
   }
 
-  /* 选中 */
+  /**
+   * 选中
+   */
   select() {
     if (this.isSelected()) return;
 
@@ -252,24 +325,34 @@ class BottomLine extends BasicDraw {
     this.showHintInput();
   }
 
-  /** 是否选中 */
+  /**
+   * 是否选中
+   * @returns {boolean} 是否选中
+   */
   isSelected() {
     return this.line.stroke === this.selectedColor;
   }
 
-  /** 是否结束 */
+  /**
+   * 是否结束
+   * @returns {boolean} 是否结束
+   */
   isFinish() {
     return this.line.stroke === this.finishColor;
   }
 
-  /* 经过 */
+  /**
+   * 经过
+   */
   hover() {
     this.line.set({
       stroke: this.hoverColor,
     });
   }
 
-  /** 正常 */
+  /**
+   * 正常
+   */
   normal() {
     this.line.set({
       stroke: this.finishColor,
@@ -280,7 +363,9 @@ class BottomLine extends BasicDraw {
     });
   }
 
-  /** 闭合 */
+  /**
+   * 闭合
+   */
   close() {
     this.hideHintInput();
     this.showAnnotation({
@@ -288,7 +373,9 @@ class BottomLine extends BasicDraw {
     });
   }
 
-  /** 开放 */
+  /**
+   * 开放
+   */
   open() {
     this.hideHintInput();
   }

@@ -6,6 +6,7 @@
       <Button @click="reset">重置</Button>
       <Button @click="undo" :disabled="!canUndo">撤销</Button>
       <Button @click="redo" :disabled="!canRedo">恢复</Button>
+      <Button @click="toggleOrthogonal" :type="orthogonal ? 'primary' : 'default'">正交</Button>
       <Button @click="exportData">导出数据</Button>
       <Button v-for="(item, index) in dataList" :key="index" @click="importData?.(item)">
         导入数据{{ index + 1 }}
@@ -20,7 +21,17 @@ import { ref } from 'vue';
 import { useDrawBottom } from './core';
 
 const mainRef = ref<HTMLElement>();
-const { reset, undo, redo, importData, exportData, canRedo, canUndo } = useDrawBottom(mainRef);
+const {
+  reset,
+  undo,
+  redo,
+  importData,
+  exportData,
+  toggleOrthogonal,
+  canRedo,
+  canUndo,
+  orthogonal,
+} = useDrawBottom(mainRef);
 
 type DataItem = Array<{
   x: number;

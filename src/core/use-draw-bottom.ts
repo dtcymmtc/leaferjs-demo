@@ -13,9 +13,10 @@ import { Snap } from './snap';
  * @returns {Object} 包含导入、导出、重置、撤销、恢复等功能的对象
  */
 export const useDrawBottom = (eleRef: Ref<HTMLElement | undefined>) => {
-  const drawBottom = shallowRef<DrawBottom>();
+  let drawBottom = shallowRef<DrawBottom>();
   const canUndo = ref(false);
   const canRedo = ref(false);
+  const orthogonal = ref(false);
 
   const init = () => {
     const app = new App({
@@ -50,6 +51,9 @@ export const useDrawBottom = (eleRef: Ref<HTMLElement | undefined>) => {
       onHistoryChange: (undoStatus, redoStatus) => {
         canRedo.value = redoStatus;
         canUndo.value = undoStatus;
+      },
+      onOrthogonalChange: (value) => {
+        orthogonal.value = value;
       },
     });
   };
@@ -86,6 +90,10 @@ export const useDrawBottom = (eleRef: Ref<HTMLElement | undefined>) => {
     return drawBottom.value?.redo();
   };
 
+  const toggleOrthogonal: DrawBottom['toggleOrthogonal'] = () => {
+    return drawBottom.value?.toggleOrthogonal();
+  };
+
   return {
     /** 导入数据 */
     importData,
@@ -101,5 +109,9 @@ export const useDrawBottom = (eleRef: Ref<HTMLElement | undefined>) => {
     canUndo,
     /** 是否可以恢复 */
     canRedo,
+    /** 是否正交 */
+    orthogonal,
+    /** 切换正交绘制状态　*/
+    toggleOrthogonal,
   };
 };

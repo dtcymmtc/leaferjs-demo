@@ -13,6 +13,7 @@ import { BottomLineGroup } from './bottom-line-group';
  */
 interface DrawBottomOptions extends BasicDrawOptions {
   onHistoryChange?: (canUndo: boolean, canRedo: boolean) => void;
+  onOrthogonalChange?: (orthogonal: boolean) => void;
 }
 
 /**
@@ -23,12 +24,16 @@ class DrawBottom extends BasicDraw {
   currentBottomLine: BottomLine | undefined = undefined;
   status: 'init' | 'idle' | 'drawing' | 'done' = 'init';
   bottomLineGroup: BottomLineGroup;
+  orthogonal: boolean = false;
+  onOrthogonalChangeCallback: DrawBottomOptions['onOrthogonalChange'];
 
   /**
    * @param {BasicDrawOptions} options - 配置选项
    */
   constructor(options: DrawBottomOptions) {
     super(options);
+
+    this.onOrthogonalChangeCallback = options.onOrthogonalChange;
 
     this.bottomLineGroup = new BottomLineGroup({
       app: this.app,
@@ -66,6 +71,10 @@ class DrawBottom extends BasicDraw {
    */
   onStart() {
     const point = this.snap.getCursorPoint();
+
+    if (this.bottomLineGroup.bottomLines.length === 0) {
+      this.snap.clearTargetPoints();
+    }
 
     if (this.status === 'done') {
       return;
@@ -126,6 +135,12 @@ class DrawBottom extends BasicDraw {
     });
   }
 
+  /** 切换正交绘制状态 */
+  toggleOrthogonal() {
+    this.orthogonal = !this.orthogonal;
+    this.onOrthogonalChangeCallback?.(this.orthogonal);
+  }
+
   /**
    * 鼠标移动事件处理
    */
@@ -133,7 +148,7 @@ class DrawBottom extends BasicDraw {
     const point = this.snap.getCursorPoint();
 
     if (this.status === 'drawing') {
-      this.currentBottomLine?.drawing(point);
+      this.currentBottomLine?.drawing(this.orthogonal, point);
     }
   }
 
