@@ -35,11 +35,11 @@ class BottomLineGroup extends BasicDraw {
   /** 可绘制点 */
   drawablePoints: UI[] = [];
   /** 连接点 */
-  linkPoints: UI[] = [];
+  private linkPoints: UI[] = [];
   /** 是否闭合 */
   closed = false;
   /** 闭合回调函数 */
-  closedCallback: (() => void) | undefined;
+  private closedCallback: (() => void) | undefined;
   /** 闭合区域 */
   closedPolygon = new Polygon({
     points: [],
@@ -47,9 +47,9 @@ class BottomLineGroup extends BasicDraw {
     visible: false,
   });
   /** 选中的底边 */
-  selectedBottomLine: BottomLine | undefined;
+  private selectedBottomLine: BottomLine | undefined;
   /** 经过的底边 */
-  hoverBottomLine: BottomLine | undefined;
+  private hoverBottomLine: BottomLine | undefined;
   /** 历史记录  */
   drawHistory: DrawHistory;
 
@@ -90,7 +90,7 @@ class BottomLineGroup extends BasicDraw {
   }
 
   /** 更新底边视图 */
-  updateBottomLines() {
+  private updateBottomLines() {
     this.bottomLines.forEach((bottomLine) => {
       if (bottomLine === this.selectedBottomLine) {
         bottomLine.select();
@@ -124,7 +124,7 @@ class BottomLineGroup extends BasicDraw {
   }
 
   /** 获取可以生成矩形的顶点并排序  */
-  sortPolygonPoints(): Point[] {
+  private sortPolygonPoints(): Point[] {
     // 构建邻接表
     const adjacency = new Map<string, Point[]>();
 
@@ -217,7 +217,7 @@ class BottomLineGroup extends BasicDraw {
   /**
    * 更新可绘制点和连接点
    */
-  update(): void {
+  private update(): void {
     const pointCount: Map<string, number> = new Map();
 
     // 统计每个点作为起点或终点的次数
@@ -402,7 +402,7 @@ class BottomLineGroup extends BasicDraw {
   }
 
   /** 图形闭合 */
-  close() {
+  private close() {
     const polygonPoints = this.sortPolygonPoints();
     const area = calculateAreaSign(polygonPoints);
     const isCCW = area > 0; // 逆时针标志
@@ -431,7 +431,7 @@ class BottomLineGroup extends BasicDraw {
   }
 
   /** 图形开放 */
-  open() {
+  private open() {
     this.closed = false;
     this.closedPolygon.set({ points: [], visible: false });
 

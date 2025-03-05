@@ -2,7 +2,7 @@
  * Debug 类，用于在页面上显示调试信息
  */
 class Debug {
-  element: HTMLElement;
+  private element: HTMLElement;
 
   constructor() {
     if (document.getElementById('debug')) {

@@ -5,9 +5,9 @@ import { convertSize } from '../helper';
  * 直线辅助线类，用于显示和管理直线辅助线
  */
 class LineAuxiliaryLine {
-  app: App;
-  line: Line;
-  defaultColor = 'rgb(22,217,168)';
+  private app: App;
+  private line: Line;
+  private defaultColor = 'rgb(22,217,168)';
 
   /**
    * 创建一个直线辅助线实例

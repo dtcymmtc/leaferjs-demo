@@ -22,13 +22,13 @@ interface DrawBottomOptions extends BasicDrawOptions {
  * @extends BasicDraw
  */
 class DrawBottom extends BasicDraw {
-  currentBottomLine: BottomLine | undefined = undefined;
-  status: 'init' | 'idle' | 'drawing' | 'done' = 'init';
+  private currentBottomLine: BottomLine | undefined = undefined;
+  private status: 'init' | 'idle' | 'drawing' | 'done' = 'init';
   bottomLineGroup: BottomLineGroup;
   orthogonal: boolean = false;
   showAngle: boolean = true;
-  onOrthogonalChangeCallback: DrawBottomOptions['onOrthogonalChange'];
-  onShowAngleChangeChangeCallback: DrawBottomOptions['onShowAngleChange'];
+  private onOrthogonalChangeCallback: DrawBottomOptions['onOrthogonalChange'];
+  private onShowAngleChangeChangeCallback: DrawBottomOptions['onShowAngleChange'];
 
   /**
    * @param {BasicDrawOptions} options - 配置选项
@@ -73,7 +73,7 @@ class DrawBottom extends BasicDraw {
   /**
    * 开始绘制事件处理
    */
-  onStart() {
+  private onStart() {
     const point = this.snap.getCursorPoint();
 
     if (this.bottomLineGroup.bottomLines.length === 0) {
@@ -106,7 +106,7 @@ class DrawBottom extends BasicDraw {
    * 创建底边线
    * @param {Point} point - 起点
    */
-  createBottomLine(point: Point) {
+  private createBottomLine(point: Point) {
     // 结束上一个底边绘制
     if (this.currentBottomLine) {
       this.currentBottomLine.finish();
@@ -161,7 +161,7 @@ class DrawBottom extends BasicDraw {
   /**
    * 鼠标移动事件处理
    */
-  onMove() {
+  private onMove() {
     const point = this.snap.getCursorPoint();
 
     if (this.status === 'drawing') {
@@ -172,18 +172,9 @@ class DrawBottom extends BasicDraw {
   /**
    * 终止绘制事件处理
    */
-  onAbort() {
+  private onAbort() {
     this.status = 'idle';
     this.currentBottomLine?.abort();
-    this.currentBottomLine = undefined;
-  }
-
-  /**
-   * 结束绘制事件处理
-   */
-  onEnd() {
-    this.status = 'done';
-    this.currentBottomLine?.finish();
     this.currentBottomLine = undefined;
   }
 
@@ -244,7 +235,7 @@ class DrawBottom extends BasicDraw {
   }
 
   /** 重置视图 */
-  resetView() {
+  private resetView() {
     this.app.tree.zoomLayer.scale = DEFAULT_ZOOM_SCALE;
     this.app.tree.zoomLayer.x = 0;
     this.app.tree.zoomLayer.y = 0;

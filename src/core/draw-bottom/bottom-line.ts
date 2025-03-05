@@ -39,15 +39,15 @@ class BottomLine extends BasicDraw {
   private hintInput: HintInput;
   private angleAuxiliaryLine: AngleAuxiliaryLine;
   private drawBottom: DrawBottom;
-  defaultColor = 'rgb(150,197,250)';
-  hitColor = 'rgb(225,33,0)';
-  finishColor = 'rgb(140,140,140)';
-  hoverColor = 'rgb(175,210,250)';
-  selectedColor = 'rgb(110,170,250)';
+  private defaultColor = 'rgb(150,197,250)';
+  private hitColor = 'rgb(225,33,0)';
+  private finishColor = 'rgb(140,140,140)';
+  private hoverColor = 'rgb(175,210,250)';
+  private selectedColor = 'rgb(110,170,250)';
   hit: boolean = false;
-  finishCallback: BottomLineOptions['onFinish'];
-  modifyCallback: BottomLineOptions['onModify'];
-  start: Point;
+  private finishCallback: BottomLineOptions['onFinish'];
+  private modifyCallback: BottomLineOptions['onModify'];
+  private start: Point;
 
   /**
    * @param {BottomLineOptions} options - 配置选项
