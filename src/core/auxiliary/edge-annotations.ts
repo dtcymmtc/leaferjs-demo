@@ -367,7 +367,7 @@ class EdgeAnnotations extends BasicDraw {
         const ui = new Line({
           points,
           strokeWidth: convertSize(2),
-          stroke: 'rgb(89,89,89)',
+          stroke: 'rgb(153,153,153)',
           visible: this.showLine,
         });
         this.app.tree.add(ui);

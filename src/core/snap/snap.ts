@@ -124,7 +124,7 @@ class Snap {
       offsetX: (convertSize(DEFAULT_BOTTOM_LINE_WIDTH) / 2) * -1,
       offsetY: (convertSize(DEFAULT_BOTTOM_LINE_WIDTH) / 2) * -1,
       strokeWidth: convertSize(1),
-      stroke: 'rgb(255, 0, 0)',
+      stroke: 'rgb(20, 127, 250)',
       fill: 'rgb(255, 255, 255)',
       visible: false,
       zIndex: 99,

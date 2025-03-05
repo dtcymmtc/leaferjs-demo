@@ -22,7 +22,7 @@ class AngleAuxiliaryLine extends BasicDraw {
   curve: Line;
   hintInput: HintInput | undefined;
   suffix: string | undefined;
-  defaultColor = 'rgb(89,89,89)';
+  defaultColor = 'rgb(153,153,153)';
   parallelColor = 'rgb(22,217,168)';
 
   /**

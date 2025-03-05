@@ -6,7 +6,9 @@
       <Button @click="reset">重置</Button>
       <Button @click="undo" :disabled="!canUndo">撤销</Button>
       <Button @click="redo" :disabled="!canRedo">恢复</Button>
+      <Divider type="vertical" />
       <Button @click="toggleOrthogonal" :type="orthogonal ? 'primary' : 'default'">正交</Button>
+      <Divider type="vertical" />
       <Button @click="exportData">导出数据</Button>
       <Button v-for="(item, index) in dataList" :key="index" @click="importData?.(item)">
         导入数据{{ index + 1 }}
@@ -16,7 +18,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { Button, Space } from 'ant-design-vue';
+import { Button, Divider, Space } from 'ant-design-vue';
 import { ref } from 'vue';
 import { useDrawBottom } from './core';
 
