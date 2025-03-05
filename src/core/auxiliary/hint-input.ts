@@ -28,7 +28,9 @@ class HintInput extends BasicDraw {
   constructor(options: HintInputOptions) {
     super(options);
 
-    document.body.appendChild(this.input);
+    if (this.app.view instanceof HTMLElement) {
+      this.app.view.appendChild(this.input);
+    }
 
     this.type = options.type ?? 'line';
     this.autoFocus = options?.autoFocus ?? false;

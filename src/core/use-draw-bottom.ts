@@ -20,6 +20,11 @@ export const useDrawBottom = (eleRef: Ref<HTMLElement | undefined>) => {
   const showAngle = ref(true);
 
   const init = () => {
+    if (eleRef.value) {
+      eleRef.value.style.position = 'relative';
+      eleRef.value.style.overflow = 'hidden';
+    }
+
     const app = new App({
       view: eleRef.value,
       editor: {}, // 会自动创建 editor实例、tree层、sky层
