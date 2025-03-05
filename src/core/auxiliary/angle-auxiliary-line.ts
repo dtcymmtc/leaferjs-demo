@@ -12,6 +12,7 @@ import { HintInput } from './hint-input';
 interface AngleAuxiliaryLineOptions extends BasicDrawOptions {
   x: number;
   y: number;
+  target: Line;
 }
 
 /**
@@ -24,6 +25,7 @@ class AngleAuxiliaryLine extends BasicDraw {
   suffix: string | undefined;
   defaultColor = 'rgb(153,153,153)';
   parallelColor = 'rgb(22,217,168)';
+  target: Line;
 
   /**
    * 创建一个夹角辅助线实例
@@ -31,6 +33,8 @@ class AngleAuxiliaryLine extends BasicDraw {
    */
   constructor(options: AngleAuxiliaryLineOptions) {
     super(options);
+
+    this.target = options.target;
 
     // 初始化直线对象
     this.line = new Line({
@@ -59,6 +63,7 @@ class AngleAuxiliaryLine extends BasicDraw {
       debug: this.debug,
       suffix: '°',
       type: 'arc',
+      target: this.curve,
     });
   }
 
@@ -66,11 +71,11 @@ class AngleAuxiliaryLine extends BasicDraw {
    * 显示夹角辅助线
    * @param {Line} line - 参考线条
    */
-  show(line: Line) {
+  show() {
     let result = 0;
     let parallel = false;
-    const width = line.width ?? 0;
-    const rotation = line.rotation ?? 0;
+    const width = this.target.width ?? 0;
+    const rotation = this.target.rotation ?? 0;
 
     // 根据旋转角度设置平行状态和结果角度
     if (rotation === 0) {
@@ -109,7 +114,7 @@ class AngleAuxiliaryLine extends BasicDraw {
     });
 
     // 获取线条方向并设置曲线的曲率
-    const direction = getLineDirection(line);
+    const direction = getLineDirection(this.target);
     const curvature = ['left-bottom', 'bottom-left', 'right-top', 'top-right'].includes(direction)
       ? -0.3
       : 0.3;
@@ -117,12 +122,12 @@ class AngleAuxiliaryLine extends BasicDraw {
     // 设置曲线属性
     this.curve.set({
       strokeWidth: convertSize(1),
-      points: lineArc(getLineEndPoint(line), getLineEndPoint(this.line), 50, curvature),
+      points: lineArc(getLineEndPoint(this.target), getLineEndPoint(this.line), 50, curvature),
       visible: true,
     });
 
     // 显示提示输入框，显示线条之间的夹角
-    this.hintInput?.showInput(this.curve, getAngleBetweenLines(line, this.line));
+    this.hintInput?.showInput(getAngleBetweenLines(this.target, this.line));
 
     // 设置输入框的偏移值
     if (direction.includes('right')) {

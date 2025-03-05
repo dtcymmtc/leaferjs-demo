@@ -76,6 +76,7 @@ class BottomLine extends BasicDraw {
       debug: this.debug,
       snap: this.snap,
       autoFocus: true,
+      target: this.line,
       onChange: (value) => {
         if (this.line) {
           if (this.isSelected()) {
@@ -96,6 +97,7 @@ class BottomLine extends BasicDraw {
       debug: this.debug,
       x: this.start.x,
       y: this.start.y,
+      target: this.line,
     });
 
     // 监听线条属性变化事件
@@ -286,7 +288,7 @@ class BottomLine extends BasicDraw {
    * 显示提示
    */
   showHintInput() {
-    this.hintInput.showInput(this.line, this.line.width);
+    this.hintInput.showInput(this.line.width);
   }
 
   /**
@@ -320,7 +322,7 @@ class BottomLine extends BasicDraw {
    * 显示夹角辅助线
    */
   showAngleAuxiliaryLine() {
-    this.angleAuxiliaryLine.show(this.line);
+    this.angleAuxiliaryLine.show();
   }
 
   /**

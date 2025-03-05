@@ -8,6 +8,7 @@ interface HintInputOptions extends BasicDrawOptions {
   suffix?: string;
   onChange?: (value: string) => void;
   type?: 'line' | 'arc';
+  target: Line;
 }
 
 /**
@@ -20,6 +21,7 @@ class HintInput extends BasicDraw {
   suffix: string | undefined;
   edgeAnnotations: EdgeAnnotations;
   type: Required<HintInputOptions>['type'];
+  target: HintInputOptions['target'];
 
   /**
    * 创建一个提示输入框实例
@@ -35,6 +37,7 @@ class HintInput extends BasicDraw {
     this.type = options.type ?? 'line';
     this.autoFocus = options?.autoFocus ?? false;
     this.suffix = options?.suffix;
+    this.target = options.target;
     this.edgeAnnotations = new EdgeAnnotations({
       app: this.app,
       snap: this.snap,
@@ -70,13 +73,13 @@ class HintInput extends BasicDraw {
    * @param {number|string} [num] - 显示的数值
    * @param {boolean} [disabled=false] - 是否禁用输入框
    */
-  showInput(line: Line, num?: number | string, disabled = false) {
+  showInput(num?: number | string, disabled = false) {
     if (!num) {
       this.hideInput();
       return;
     }
 
-    this.showAnnotation(line, {
+    this.showAnnotation(this.target, {
       showLabel: false,
     });
 
