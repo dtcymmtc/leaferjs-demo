@@ -1,4 +1,4 @@
-import { Line } from 'leafer-editor';
+import { Line, MoveEvent, ZoomEvent } from 'leafer-editor';
 import { BasicDraw, type BasicDrawOptions } from '../basic/basic-draw';
 import { getLinePoints } from '../helper';
 import { EdgeAnnotations, type EdgeAnnotationsUpdateOptions } from './edge-annotations';
@@ -15,13 +15,15 @@ interface HintInputOptions extends BasicDrawOptions {
  * 提示输入框类，用于显示和管理输入框
  */
 class HintInput extends BasicDraw {
-  input: HTMLInputElement = document.createElement('input');
-  timer: number | undefined = undefined;
-  autoFocus = false;
-  suffix: string | undefined;
-  edgeAnnotations: EdgeAnnotations;
-  type: Required<HintInputOptions>['type'];
-  target: HintInputOptions['target'];
+  private input: HTMLInputElement = document.createElement('input');
+  private timer: number | undefined = undefined;
+  private autoFocus = false;
+  private suffix: string | undefined;
+  private edgeAnnotations: EdgeAnnotations;
+  private type: Required<HintInputOptions>['type'];
+  private target: HintInputOptions['target'];
+  private layoutChanging = false;
+  private cacheInputText: string = '';
 
   /**
    * 创建一个提示输入框实例
@@ -55,6 +57,15 @@ class HintInput extends BasicDraw {
         options?.onChange?.(this.input.value);
       }
     });
+
+    this.getInputVisible = this.getInputVisible.bind(this);
+    this.onLayoutChange = this.onLayoutChange.bind(this);
+    this.onLayoutChangeEnd = this.onLayoutChangeEnd.bind(this);
+
+    this.app.on(MoveEvent.MOVE, this.onLayoutChange);
+    this.app.on(MoveEvent.END, this.onLayoutChangeEnd);
+    this.app.on(ZoomEvent.ZOOM, this.onLayoutChange);
+    this.app.on(ZoomEvent.END, this.onLayoutChangeEnd);
   }
 
   /**
@@ -108,10 +119,12 @@ class HintInput extends BasicDraw {
     this.input.disabled = disabled;
 
     if (typeof num === 'string') {
-      this.input.value = `${num}${this.suffix ?? ''}`;
+      this.cacheInputText = `${num}`;
     } else {
-      this.input.value = `${Math.ceil(num ?? 0)}${this.suffix ?? ''}`;
+      this.cacheInputText = `${Math.ceil(num ?? 0)}`;
     }
+
+    this.input.value = `${this.cacheInputText}${this.suffix ?? ''}`;
 
     if (this.autoFocus) {
       this.timer = setTimeout(() => {
@@ -120,6 +133,26 @@ class HintInput extends BasicDraw {
         this.input.focus();
         this.input.select();
       }, 400);
+    }
+  }
+
+  private getInputVisible() {
+    return this.input.style.display === 'block';
+  }
+
+  /** 画布改变 */
+  private onLayoutChange() {
+    if (this.getInputVisible()) {
+      this.hideInput();
+      this.layoutChanging = true;
+    }
+  }
+
+  /** 画布改变完成 */
+  private onLayoutChangeEnd() {
+    if (this.layoutChanging) {
+      this.showInput(this.cacheInputText);
+      this.layoutChanging = false;
     }
   }
 
@@ -144,7 +177,16 @@ class HintInput extends BasicDraw {
 
   /** 隐藏标注  */
   hideAnnotation() {
-    this.edgeAnnotations.clear();
+    this.edgeAnnotations.remove();
+  }
+
+  remove() {
+    this.input.remove();
+    this.edgeAnnotations.remove();
+    this.app.off(MoveEvent.MOVE, this.onLayoutChange);
+    this.app.off(MoveEvent.END, this.onLayoutChangeEnd);
+    this.app.off(ZoomEvent.ZOOM, this.onLayoutChange);
+    this.app.off(ZoomEvent.END, this.onLayoutChangeEnd);
   }
 }
 

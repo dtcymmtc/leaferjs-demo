@@ -88,7 +88,7 @@ class EdgeAnnotations extends BasicDraw {
   }
 
   update(options?: EdgeAnnotationsUpdateOptions) {
-    this.clear();
+    this.remove();
 
     this.points = options?.points ?? this.points;
     this.type = options?.type ?? this.type;
@@ -411,7 +411,7 @@ class EdgeAnnotations extends BasicDraw {
   /**
    * 清除所有标注
    */
-  clear() {
+  remove() {
     this.uiData.forEach((ui) => ui.remove());
     this.uiData = [];
   }

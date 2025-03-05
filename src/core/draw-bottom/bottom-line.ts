@@ -278,10 +278,9 @@ class BottomLine extends BasicDraw {
    * 移除线条
    */
   remove() {
-    this.hideHintInput();
-    this.hideAnnotation();
     this.angleAuxiliaryLine.remove();
     this.line?.remove();
+    this.hintInput?.remove();
   }
 
   /**

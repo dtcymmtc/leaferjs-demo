@@ -154,7 +154,7 @@ class AngleAuxiliaryLine extends BasicDraw {
   remove() {
     this.line?.remove();
     this.curve?.remove();
-    this.hintInput?.hideInput();
+    this.hintInput?.remove();
   }
 }
 

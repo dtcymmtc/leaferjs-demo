@@ -35,8 +35,8 @@ export const useDrawBottom = (eleRef: Ref<HTMLElement | undefined>) => {
         drag: 'auto',
       },
       zoom: {
-        min: Constants.DEFAULT_ZOOM_SCALE / 4,
-        max: Constants.DEFAULT_ZOOM_SCALE * 4,
+        min: Constants.DEFAULT_ZOOM_SCALE / 2,
+        max: Constants.DEFAULT_ZOOM_SCALE * 2,
       },
       cursor: false,
     });
