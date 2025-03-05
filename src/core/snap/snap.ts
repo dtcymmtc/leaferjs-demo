@@ -10,7 +10,7 @@ const threshold = convertSize(10);
  * 获取吸附点
  * @param {Point} mousePos - 鼠标位置
  * @param {Point[]} points - 吸附点集合
- * @returns {Object} 吸附结果
+ * @returns {{snapPoint: Point | null, targets: Point[], type: string}} 吸附结果
  */
 export function snapToPoints(mousePos: Point, points: Point[]) {
   // 存储不同类型的吸附点
@@ -170,7 +170,7 @@ class Snap {
    * 获取鼠标指针位置
    * @returns {Point} 鼠标指针位置
    */
-  getCursorPoint() {
+  getCursorPoint(): Point {
     return new Point(this.cursor.x, this.cursor.y);
   }
 
@@ -178,14 +178,14 @@ class Snap {
    * 添加吸附点
    * @param {Point} point - 吸附点
    */
-  addTargetPoint(point: Point) {
+  addTargetPoint(point: Point): void {
     this.targetPoints.push(point);
   }
 
   /**
    * 清空吸附点
    */
-  clearTargetPoints() {
+  clearTargetPoints(): void {
     this.targetPoints = [];
   }
 }

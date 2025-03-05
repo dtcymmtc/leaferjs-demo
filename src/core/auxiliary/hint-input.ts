@@ -15,14 +15,58 @@ interface HintInputOptions extends BasicDrawOptions {
  * 提示输入框类，用于显示和管理输入框
  */
 class HintInput extends BasicDraw {
+  /**
+   * 输入框元素
+   * @type {HTMLInputElement}
+   */
   private input: HTMLInputElement = document.createElement('input');
+
+  /**
+   * 定时器
+   * @type {number | undefined}
+   */
   private timer: number | undefined = undefined;
+
+  /**
+   * 是否自动聚焦
+   * @type {boolean}
+   */
   private autoFocus = false;
+
+  /**
+   * 后缀
+   * @type {string | undefined}
+   */
   private suffix: string | undefined;
+
+  /**
+   * 边标注实例
+   * @type {EdgeAnnotations}
+   */
   private edgeAnnotations: EdgeAnnotations;
+
+  /**
+   * 输入框类型
+   * @type {Required<HintInputOptions>['type']}
+   */
   private type: Required<HintInputOptions>['type'];
+
+  /**
+   * 目标线条
+   * @type {HintInputOptions['target']}
+   */
   private target: HintInputOptions['target'];
+
+  /**
+   * 布局改变标志
+   * @type {boolean}
+   */
   private layoutChanging = false;
+
+  /**
+   * 缓存的输入文本
+   * @type {string}
+   */
   private cacheInputText: string = '';
 
   /**
@@ -80,7 +124,6 @@ class HintInput extends BasicDraw {
 
   /**
    * 显示输入框
-   * @param {Line} line - 参考线条
    * @param {number|string} [num] - 显示的数值
    * @param {boolean} [disabled=false] - 是否禁用输入框
    */
@@ -136,6 +179,10 @@ class HintInput extends BasicDraw {
     }
   }
 
+  /**
+   * 获取输入框是否可见
+   * @returns {boolean} 输入框是否可见
+   */
   private getInputVisible() {
     return this.input.style.display === 'block';
   }
@@ -167,7 +214,11 @@ class HintInput extends BasicDraw {
     this.input.blur();
   }
 
-  /** 显示标注  */
+  /**
+   * 显示标注
+   * @param {Line} line - 参考线条
+   * @param {EdgeAnnotationsUpdateOptions} [options] - 更新选项
+   */
   showAnnotation(line: Line, options?: EdgeAnnotationsUpdateOptions) {
     this.edgeAnnotations.update({
       points: getLinePoints(line),
@@ -175,11 +226,12 @@ class HintInput extends BasicDraw {
     });
   }
 
-  /** 隐藏标注  */
+  /** 隐藏标注 */
   hideAnnotation() {
     this.edgeAnnotations.remove();
   }
 
+  /** 移除提示输入框 */
   remove() {
     this.input.remove();
     this.edgeAnnotations.remove();

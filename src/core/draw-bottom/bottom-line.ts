@@ -156,7 +156,7 @@ class BottomLine extends BasicDraw {
    * 获取线条对象
    * @returns {Line} 线条对象
    */
-  getLine() {
+  getLine(): Line {
     return this.line;
   }
 
@@ -164,7 +164,7 @@ class BottomLine extends BasicDraw {
    * 获取线条起点
    * @returns {Point} 起点
    */
-  getStartPoint() {
+  getStartPoint(): Point {
     return new Point(this.line.x, this.line.y);
   }
 
@@ -172,7 +172,7 @@ class BottomLine extends BasicDraw {
    * 获取线条终点
    * @returns {Point} 终点
    */
-  getEndPoint() {
+  getEndPoint(): Point {
     return getLineEndPoint(this.line);
   }
 
@@ -180,7 +180,7 @@ class BottomLine extends BasicDraw {
    * 获取线条起终点
    * @returns {Point[]} 起终点数组
    */
-  getPoints() {
+  getPoints(): Point[] {
     return getLinePoints(this.line);
   }
 
@@ -188,7 +188,7 @@ class BottomLine extends BasicDraw {
    * 获取线条边界
    * @returns {Bounds} 线条边界
    */
-  getBounds() {
+  getBounds(): Bounds {
     return new Bounds(this.line.getBounds());
   }
 
@@ -197,7 +197,7 @@ class BottomLine extends BasicDraw {
    * @param {Point} start - 起点
    * @param {Point} end - 终点
    */
-  setStartEndPoint(start: Point, end: Point) {
+  setStartEndPoint(start: Point, end: Point): void {
     setLineStartEndPoint(this.line, start, end);
   }
 
@@ -205,7 +205,7 @@ class BottomLine extends BasicDraw {
    * 绘制线条
    * @param {Point} point - 当前点
    */
-  drawing(point: Point) {
+  drawing(point: Point): void {
     this.line.set({
       className: BottomLineStatus.Drawing,
       stroke: this.hit ? this.hitColor : this.defaultColor,
@@ -241,7 +241,7 @@ class BottomLine extends BasicDraw {
   /**
    * 完成绘制
    */
-  finish() {
+  finish(): void {
     this.line.set({
       stroke: this.finishColor,
       className: BottomLineStatus.Finish,
@@ -268,7 +268,7 @@ class BottomLine extends BasicDraw {
   /**
    * 终止绘制
    */
-  abort() {
+  abort(): void {
     this.remove();
     this.hideHintInput();
     this.angleAuxiliaryLine.remove();
@@ -277,7 +277,7 @@ class BottomLine extends BasicDraw {
   /**
    * 移除线条
    */
-  remove() {
+  remove(): void {
     this.angleAuxiliaryLine.remove();
     this.line?.remove();
     this.hintInput?.remove();
@@ -286,14 +286,14 @@ class BottomLine extends BasicDraw {
   /**
    * 显示提示
    */
-  showHintInput() {
+  showHintInput(): void {
     this.hintInput.showInput(this.line.width);
   }
 
   /**
    * 隐藏提示
    */
-  hideHintInput() {
+  hideHintInput(): void {
     this.hintInput.hideInput();
   }
 
@@ -301,7 +301,7 @@ class BottomLine extends BasicDraw {
    * 显示标注
    * @param {EdgeAnnotationsUpdateOptions} [options] - 标注更新选项
    */
-  showAnnotation(options?: EdgeAnnotationsUpdateOptions) {
+  showAnnotation(options?: EdgeAnnotationsUpdateOptions): void {
     // 如果有传入点，则使用传入的点，保证绘制方向正确
     if (options?.points) {
       this.setStartEndPoint(options.points[0], options.points[1]);
@@ -313,28 +313,28 @@ class BottomLine extends BasicDraw {
   /**
    * 隐藏标注
    */
-  hideAnnotation() {
+  hideAnnotation(): void {
     this.hintInput.hideAnnotation();
   }
 
   /**
    * 显示夹角辅助线
    */
-  showAngleAuxiliaryLine() {
+  showAngleAuxiliaryLine(): void {
     this.angleAuxiliaryLine.show();
   }
 
   /**
    * 隐藏夹角辅助线
    */
-  hideAngleAuxiliaryLine() {
+  hideAngleAuxiliaryLine(): void {
     this.angleAuxiliaryLine.hide();
   }
 
   /**
    * 选中
    */
-  select() {
+  select(): void {
     if (this.isSelected()) return;
 
     this.line.set({
@@ -347,7 +347,7 @@ class BottomLine extends BasicDraw {
    * 是否选中
    * @returns {boolean} 是否选中
    */
-  isSelected() {
+  isSelected(): boolean {
     return this.line.stroke === this.selectedColor;
   }
 
@@ -355,14 +355,14 @@ class BottomLine extends BasicDraw {
    * 是否结束
    * @returns {boolean} 是否结束
    */
-  isFinish() {
+  isFinish(): boolean {
     return this.line.stroke === this.finishColor;
   }
 
   /**
    * 经过
    */
-  hover() {
+  hover(): void {
     this.line.set({
       stroke: this.hoverColor,
     });
@@ -371,7 +371,7 @@ class BottomLine extends BasicDraw {
   /**
    * 正常
    */
-  normal() {
+  normal(): void {
     this.line.set({
       stroke: this.finishColor,
     });
@@ -384,7 +384,7 @@ class BottomLine extends BasicDraw {
   /**
    * 闭合
    */
-  close() {
+  close(): void {
     this.hideHintInput();
     this.showAnnotation({
       showLabel: true,
@@ -394,7 +394,7 @@ class BottomLine extends BasicDraw {
   /**
    * 开放
    */
-  open() {
+  open(): void {
     this.hideHintInput();
   }
 }

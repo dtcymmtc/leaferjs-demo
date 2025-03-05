@@ -8,18 +8,27 @@ interface DrawHistoryOptions {
   onHistoryChange?: (canUndo: boolean, canRedo: boolean) => void;
 }
 
+/**
+ * 绘制历史记录类
+ */
 class DrawHistory {
-  /** 历史记录栈 */
+  /** @type {Point[][][]} 历史记录栈 */
   private historyStack: Point[][][] = [];
-  /** 撤销栈 */
+  /** @type {Point[][][]} 撤销栈 */
   private redoStack: Point[][][] = [];
-  /** 历史记录变化回调 */
+  /** @type {Function} 历史记录变化回调 */
   onHistoryChangeCallback: DrawHistoryOptions['onHistoryChange'];
 
+  /**
+   * @param {DrawHistoryOptions} options - 配置选项
+   */
   constructor(options: DrawHistoryOptions) {
     this.onHistoryChangeCallback = options.onHistoryChange;
   }
 
+  /**
+   * 更新历史记录
+   */
   updateHistory() {
     this.onHistoryChangeCallback?.(this.historyStack.length > 0, this.redoStack.length > 0);
   }
@@ -74,7 +83,9 @@ class DrawHistory {
     return result;
   }
 
-  /** 清空历史记录 */
+  /**
+   * 清空历史记录
+   */
   clear() {
     this.historyStack = [];
     this.redoStack = [];

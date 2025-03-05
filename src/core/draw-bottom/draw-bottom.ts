@@ -10,6 +10,8 @@ import { BottomLineGroup } from './bottom-line-group';
  * @typedef {Object} DrawBottomOptions
  * @extends BasicDrawOptions
  * @property {Function} [onHistoryChange] - 历史记录变化回调
+ * @property {Function} [onOrthogonalChange] - 正交变化回调
+ * @property {Function} [onShowAngleChange] - 显示角度变化回调
  */
 interface DrawBottomOptions extends BasicDrawOptions {
   onHistoryChange?: (canUndo: boolean, canRedo: boolean) => void;
@@ -31,7 +33,7 @@ class DrawBottom extends BasicDraw {
   private onShowAngleChangeChangeCallback: DrawBottomOptions['onShowAngleChange'];
 
   /**
-   * @param {BasicDrawOptions} options - 配置选项
+   * @param {DrawBottomOptions} options - 配置选项
    */
   constructor(options: DrawBottomOptions) {
     super(options);
@@ -139,13 +141,17 @@ class DrawBottom extends BasicDraw {
     });
   }
 
-  /** 切换正交绘制状态 */
+  /**
+   * 切换正交绘制状态
+   */
   toggleOrthogonal() {
     this.orthogonal = !this.orthogonal;
     this.onOrthogonalChangeCallback?.(this.orthogonal);
   }
 
-  /** 切换显示夹角 */
+  /**
+   * 切换显示夹角
+   */
   toggleShowAngle() {
     this.showAngle = !this.showAngle;
 
@@ -234,7 +240,9 @@ class DrawBottom extends BasicDraw {
     });
   }
 
-  /** 重置视图 */
+  /**
+   * 重置视图
+   */
   private resetView() {
     this.app.tree.zoomLayer.scale = DEFAULT_ZOOM_SCALE;
     this.app.tree.zoomLayer.x = 0;

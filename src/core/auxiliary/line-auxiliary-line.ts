@@ -5,8 +5,22 @@ import { convertSize } from '../helper';
  * 直线辅助线类，用于显示和管理直线辅助线
  */
 class LineAuxiliaryLine {
+  /**
+   * 应用实例
+   * @type {App}
+   */
   private app: App;
+
+  /**
+   * 直线对象
+   * @type {Line}
+   */
   private line: Line;
+
+  /**
+   * 默认颜色
+   * @type {string}
+   */
   private defaultColor = 'rgb(22,217,168)';
 
   /**

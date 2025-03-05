@@ -1,7 +1,12 @@
 /**
  * Debug 类，用于在页面上显示调试信息
+ * @class
  */
 class Debug {
+  /**
+   * @private
+   * @type {HTMLElement}
+   */
   private element: HTMLElement;
 
   constructor() {

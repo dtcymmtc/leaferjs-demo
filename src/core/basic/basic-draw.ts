@@ -17,10 +17,25 @@ export interface BasicDrawOptions {
 
 /**
  * 基础绘图类
+ * @class
  */
 class BasicDraw {
+  /**
+   * 应用实例
+   * @type {App}
+   */
   app: App;
+
+  /**
+   * 吸附实例
+   * @type {Snap}
+   */
   snap: Snap;
+
+  /**
+   * 调试实例
+   * @type {Debug}
+   */
   debug: Debug;
 
   /**

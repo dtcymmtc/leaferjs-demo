@@ -56,25 +56,72 @@ export type EdgeAnnotationsUpdateOptions = Pick<
  * @extends BasicDraw
  */
 class EdgeAnnotations extends BasicDraw {
-  /** 标注线距离原始边线的偏移距离（像素） */
+  /**
+   * 标注线距离原始边线的偏移距离（像素）
+   * @type {number}
+   * @private
+   */
   private readonly offset = convertSize(6);
-  /** 原始边线宽度，用于计算有效偏移量 */
+
+  /**
+   * 原始边线宽度，用于计算有效偏移量
+   * @type {number}
+   * @private
+   */
   private readonly strokeWidth = convertSize(DEFAULT_BOTTOM_LINE_WIDTH);
 
+  /**
+   * UI 数据
+   * @type {UI[]}
+   * @private
+   */
   private uiData: UI[] = [];
 
+  /**
+   * 是否显示标签
+   * @type {boolean}
+   * @private
+   */
   private showLabel: boolean;
 
+  /**
+   * 是否显示线条
+   * @type {boolean}
+   * @private
+   */
   private showLine: boolean;
 
+  /**
+   * 图形类型
+   * @type {'polygon' | 'line' | 'arc'}
+   * @private
+   */
   private type: EdgeAnnotationsOptions['type'];
 
+  /**
+   * 顶点数组
+   * @type {Required<EdgeAnnotationsOptions>['points']}
+   * @private
+   */
   private points: Required<EdgeAnnotationsOptions>['points'];
 
+  /**
+   * 是否逆时针
+   * @type {boolean}
+   * @private
+   */
   private isCCW: boolean;
 
+  /**
+   * 标注信息
+   * @type {Annotations}
+   */
   annotations: Annotations = { lines: [], labels: [] };
 
+  /**
+   * 构造函数
+   * @param {EdgeAnnotationsOptions} options - 配置选项
+   */
   constructor(options: EdgeAnnotationsOptions) {
     super(options);
 
@@ -87,6 +134,10 @@ class EdgeAnnotations extends BasicDraw {
     this.update();
   }
 
+  /**
+   * 更新标注信息
+   * @param {EdgeAnnotationsUpdateOptions} [options] - 更新选项
+   */
   update(options?: EdgeAnnotationsUpdateOptions) {
     this.remove();
 
@@ -111,13 +162,10 @@ class EdgeAnnotations extends BasicDraw {
   }
 
   /**
-   * 生成边线标注信息
+   * 生成多边形边线标注信息
    * @param {Point[]} vertices - 多边形顶点数组（有序排列）
    * @returns {Annotations} 包含偏移线和标签数据的标注信息
-   * ▷ 计算逻辑：
-   * 1. 判断多边形方向（CCW/CW）
-   * 2. 沿各边外法线方向生成平行偏移线
-   * 3. 计算每条边对应的中点标签位置和旋转角度
+   * @private
    */
   private generatePolygonAnnotations(vertices: Point[]): Annotations {
     const area = calculateAreaSign(vertices);
@@ -142,6 +190,7 @@ class EdgeAnnotations extends BasicDraw {
    * 生成线段标注信息
    * @param {Point[]} vertices - 线段顶点数组
    * @returns {Annotations} 包含偏移线和标签数据的标注信息
+   * @private
    */
   private generateLineAnnotations(vertices: Point[]): Annotations {
     const result = this.generateAnnotations(vertices[0], vertices[1], this.isCCW);
@@ -156,6 +205,7 @@ class EdgeAnnotations extends BasicDraw {
    * 生成弧线标注信息
    * @param {Point[]} arcPoints - 构成弧线的离散点
    * @returns {Annotations} 完整的标注信息，包含若干个分段偏移线 + 一个整体长度标签
+   * @private
    */
   private generateArcAnnotations(arcPoints: Point[]): Annotations {
     // 如果点数少于2，无意义
@@ -245,6 +295,7 @@ class EdgeAnnotations extends BasicDraw {
    * @param {Point} B - 边线终点
    * @param {boolean} isCCW - 是否逆时针
    * @returns {Object} 包含偏移线和标签数据的标注信息
+   * @private
    */
   private generateAnnotations(A: Point, B: Point, isCCW: boolean) {
     const effectiveOffset = this.offset + this.strokeWidth / 2;
@@ -313,7 +364,7 @@ class EdgeAnnotations extends BasicDraw {
    * @param {Point} start - 原始线段起点
    * @param {Point} end - 原始线段终点
    * @returns {Object} 包含两端垂直线的对象
-   * ▷ 每端垂线长度为12px（中心向两侧各延伸6px）
+   * @private
    */
   private getPerpendicularLines(
     start: Point,
@@ -352,10 +403,7 @@ class EdgeAnnotations extends BasicDraw {
   /**
    * 可视化标注信息
    * @param {Annotations} annotations - 标注信息
-   * ▷ 渲染流程：
-   * 1. 绘制所有平行偏移线
-   * 2. 在原始线段两端绘制垂直标记
-   * 3. 创建带旋转角度的长度标签
+   * @private
    */
   private renderAnnotations(annotations: Annotations) {
     annotations.lines.forEach((line) => {

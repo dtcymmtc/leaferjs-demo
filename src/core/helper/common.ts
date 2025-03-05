@@ -7,7 +7,7 @@ import { DEFAULT_ZOOM_SCALE } from '../constants';
  * @param {Bounds} bounds - 矩形边界
  * @returns {Point} 中心点
  */
-export const getBoundsCenter = (bounds: Bounds) => {
+export const getBoundsCenter = (bounds: Bounds): Point => {
   return new Point(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
 };
 
@@ -19,7 +19,7 @@ export const getBoundsCenter = (bounds: Bounds) => {
  * @param {number} [curvature=0.5] - 曲率
  * @returns {Point[]} 弧线上的点
  */
-export const lineArc = (start: Point, end: Point, numPoints = 5, curvature = 0.5) => {
+export const lineArc = (start: Point, end: Point, numPoints = 5, curvature = 0.5): Point[] => {
   const points = [];
 
   // 计算线段的中点
@@ -50,7 +50,7 @@ export const lineArc = (start: Point, end: Point, numPoints = 5, curvature = 0.5
     points.push({ x, y });
   }
 
-  return points;
+  return points.map((point) => new Point(point));
 };
 
 /**
@@ -58,7 +58,7 @@ export const lineArc = (start: Point, end: Point, numPoints = 5, curvature = 0.5
  * @param {Line} line - 线段
  * @returns {string} 方向
  */
-export const getLineDirection = (line: Line) => {
+export const getLineDirection = (line: Line): string => {
   const angle = line.rotation ?? 0;
 
   if (angle === 0) return 'right';
@@ -82,7 +82,7 @@ export const getLineDirection = (line: Line) => {
  * @param {Line} line - 线段
  * @returns {Point[]} 起终点坐标
  */
-export const getLinePoints = (line: Line) => {
+export const getLinePoints = (line: Line): Point[] => {
   if (line.points?.length) return line.points as Point[];
   const x1 = line.getComputedAttr('x') ?? 0;
   const y1 = line.getComputedAttr('y') ?? 0;
@@ -95,7 +95,7 @@ export const getLinePoints = (line: Line) => {
  * @param {Line} line - 线段
  * @returns {Point} 终点坐标
  */
-export const getLineEndPoint = (line: Line) => {
+export const getLineEndPoint = (line: Line): Point => {
   const x1 = line.getComputedAttr('x') ?? 0;
   const y1 = line.getComputedAttr('y') ?? 0;
   const rotation = line.getComputedAttr('rotation') ?? 0;
@@ -113,7 +113,7 @@ export const getLineEndPoint = (line: Line) => {
  * @param {Point} start - 起点
  * @param {Point} end - 终点
  */
-export const setLineStartEndPoint = (line: Line, start: Point, end: Point) => {
+export const setLineStartEndPoint = (line: Line, start: Point, end: Point): void => {
   line.set({
     x: start.x,
     y: start.y,
@@ -130,7 +130,7 @@ export const setLineStartEndPoint = (line: Line, start: Point, end: Point) => {
  * @param {Line} line2 - 第二条线段
  * @returns {number} 夹角
  */
-export const getAngleBetweenLines = (line1: Line, line2: Line) => {
+export const getAngleBetweenLines = (line1: Line, line2: Line): number => {
   const line1End = getLineEndPoint(line1);
   const line2End = getLineEndPoint(line2);
 
@@ -150,7 +150,7 @@ export const getAngleBetweenLines = (line1: Line, line2: Line) => {
  * @param {number} length - 长度
  * @returns {number} 转换后的长度
  */
-export const convertSize = (length: number) => {
+export const convertSize = (length: number): number => {
   return length / DEFAULT_ZOOM_SCALE;
 };
 

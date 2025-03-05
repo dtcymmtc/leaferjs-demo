@@ -9,7 +9,7 @@ import { getLineEndPoint } from './common';
  * @param {LLine} line2 - 第二条直线
  * @returns {LPoint[]} 交点数组
  */
-export function getIntersection(line1: LLine, line2: LLine) {
+export function getIntersection(line1: LLine, line2: LLine): LPoint[] {
   const s1 = new Segment(
     new Point(line1.x, line1.y),
     new Point(getLineEndPoint(line1).x, getLineEndPoint(line1).y),
