@@ -1,10 +1,7 @@
 import { Line } from 'leafer-editor';
 import { BasicDraw, type BasicDrawOptions } from '../basic/basic-draw';
-import {
-  EdgeAnnotations,
-  type EdgeAnnotationsUpdateOptions,
-} from '../draw-bottom/edge-annotations';
 import { getLinePoints } from '../helper';
+import { EdgeAnnotations, type EdgeAnnotationsUpdateOptions } from './edge-annotations';
 
 interface HintInputOptions extends BasicDrawOptions {
   autoFocus?: boolean;

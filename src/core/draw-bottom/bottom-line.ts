@@ -1,5 +1,6 @@
 import { Bounds, Line, Point, PropertyEvent } from 'leafer-editor';
 import { AngleAuxiliaryLine, HintInput } from '../auxiliary';
+import type { EdgeAnnotationsUpdateOptions } from '../auxiliary/edge-annotations';
 import { BasicDraw, type BasicDrawOptions } from '../basic/basic-draw';
 import { BottomLineStatus, DEFAULT_BOTTOM_LINE_WIDTH } from '../constants';
 import {
@@ -11,7 +12,6 @@ import {
   setLineStartEndPoint,
 } from '../helper';
 import { DrawBottom } from './draw-bottom';
-import type { EdgeAnnotationsUpdateOptions } from './edge-annotations';
 
 /**
  * @typedef {Object} BottomLineOptions
