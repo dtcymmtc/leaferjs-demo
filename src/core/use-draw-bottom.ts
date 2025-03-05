@@ -17,6 +17,7 @@ export const useDrawBottom = (eleRef: Ref<HTMLElement | undefined>) => {
   const canUndo = ref(false);
   const canRedo = ref(false);
   const orthogonal = ref(false);
+  const showAngle = ref(true);
 
   const init = () => {
     const app = new App({
@@ -54,6 +55,9 @@ export const useDrawBottom = (eleRef: Ref<HTMLElement | undefined>) => {
       },
       onOrthogonalChange: (value) => {
         orthogonal.value = value;
+      },
+      onShowAngleChange: (value) => {
+        showAngle.value = value;
       },
     });
   };
@@ -94,6 +98,10 @@ export const useDrawBottom = (eleRef: Ref<HTMLElement | undefined>) => {
     return drawBottom.value?.toggleOrthogonal();
   };
 
+  const toggleShowAngle: DrawBottom['toggleShowAngle'] = () => {
+    return drawBottom.value?.toggleShowAngle();
+  };
+
   return {
     /** 导入数据 */
     importData,
@@ -105,13 +113,17 @@ export const useDrawBottom = (eleRef: Ref<HTMLElement | undefined>) => {
     undo,
     /** 恢复上一步撤销的操作 */
     redo,
+    /** 切换正交绘制状态　*/
+    toggleOrthogonal,
+    /** 切换显示夹角状态*/
+    toggleShowAngle,
     /** 是否可以撤回 */
     canUndo,
     /** 是否可以恢复 */
     canRedo,
     /** 是否正交 */
     orthogonal,
-    /** 切换正交绘制状态　*/
-    toggleOrthogonal,
+    /** 是否显示夹角 */
+    showAngle,
   };
 };

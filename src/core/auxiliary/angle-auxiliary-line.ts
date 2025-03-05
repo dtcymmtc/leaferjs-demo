@@ -105,6 +105,7 @@ class AngleAuxiliaryLine extends BasicDraw {
       width,
       rotation: result,
       stroke: parallel ? this.parallelColor : this.defaultColor,
+      visible: true,
     });
 
     // 获取线条方向并设置曲线的曲率
@@ -117,6 +118,7 @@ class AngleAuxiliaryLine extends BasicDraw {
     this.curve.set({
       strokeWidth: convertSize(1),
       points: lineArc(getLineEndPoint(line), getLineEndPoint(this.line), 50, curvature),
+      visible: true,
     });
 
     // 显示提示输入框，显示线条之间的夹角
@@ -128,6 +130,19 @@ class AngleAuxiliaryLine extends BasicDraw {
     } else if (direction.includes('left')) {
       this.hintInput?.setOffset(-40, 0);
     }
+  }
+
+  /**
+   * 隐藏夹角辅助线
+   */
+  hide() {
+    this.line?.set({
+      visible: false,
+    });
+    this.curve.set({
+      visible: false,
+    });
+    this.hintInput?.hideInput();
   }
 
   /** 移除夹角辅助线 */

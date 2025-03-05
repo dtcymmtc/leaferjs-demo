@@ -108,7 +108,11 @@ class BottomLine extends BasicDraw {
       this.showHintInput();
 
       // 更新辅助线信息
-      this.angleAuxiliaryLine.show(this.line);
+      if (this.drawBottom.showAngle) {
+        this.showAngleAuxiliaryLine();
+      } else {
+        this.hideAngleAuxiliaryLine();
+      }
 
       // 检测是否与其他底边碰撞
       this.hit = this.isHit(this);
@@ -197,17 +201,16 @@ class BottomLine extends BasicDraw {
 
   /**
    * 绘制线条
-   * @param {boolean} orthogonal - 是否正交
    * @param {Point} point - 当前点
    */
-  drawing(orthogonal: boolean, point: Point) {
+  drawing(point: Point) {
     this.line.set({
       className: BottomLineStatus.Drawing,
       stroke: this.hit ? this.hitColor : this.defaultColor,
     });
     setLineStartEndPoint(this.line, this.start, point);
 
-    if (orthogonal) {
+    if (this.drawBottom.orthogonal) {
       const direction = getLineDirection(this.line);
 
       // 正交映射
@@ -311,6 +314,20 @@ class BottomLine extends BasicDraw {
    */
   hideAnnotation() {
     this.hintInput.hideAnnotation();
+  }
+
+  /**
+   * 显示夹角辅助线
+   */
+  showAngleAuxiliaryLine() {
+    this.angleAuxiliaryLine.show(this.line);
+  }
+
+  /**
+   * 隐藏夹角辅助线
+   */
+  hideAngleAuxiliaryLine() {
+    this.angleAuxiliaryLine.hide();
   }
 
   /**

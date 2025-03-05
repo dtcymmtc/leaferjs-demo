@@ -14,6 +14,7 @@ import { BottomLineGroup } from './bottom-line-group';
 interface DrawBottomOptions extends BasicDrawOptions {
   onHistoryChange?: (canUndo: boolean, canRedo: boolean) => void;
   onOrthogonalChange?: (orthogonal: boolean) => void;
+  onShowAngleChange?: (orthogonal: boolean) => void;
 }
 
 /**
@@ -25,7 +26,9 @@ class DrawBottom extends BasicDraw {
   status: 'init' | 'idle' | 'drawing' | 'done' = 'init';
   bottomLineGroup: BottomLineGroup;
   orthogonal: boolean = false;
+  showAngle: boolean = true;
   onOrthogonalChangeCallback: DrawBottomOptions['onOrthogonalChange'];
+  onShowAngleChangeChangeCallback: DrawBottomOptions['onShowAngleChange'];
 
   /**
    * @param {BasicDrawOptions} options - 配置选项
@@ -34,6 +37,7 @@ class DrawBottom extends BasicDraw {
     super(options);
 
     this.onOrthogonalChangeCallback = options.onOrthogonalChange;
+    this.onShowAngleChangeChangeCallback = options.onShowAngleChange;
 
     this.bottomLineGroup = new BottomLineGroup({
       app: this.app,
@@ -141,6 +145,19 @@ class DrawBottom extends BasicDraw {
     this.onOrthogonalChangeCallback?.(this.orthogonal);
   }
 
+  /** 切换显示夹角 */
+  toggleShowAngle() {
+    this.showAngle = !this.showAngle;
+
+    if (this.showAngle) {
+      this.currentBottomLine?.showAngleAuxiliaryLine();
+    } else {
+      this.currentBottomLine?.hideAngleAuxiliaryLine();
+    }
+
+    this.onShowAngleChangeChangeCallback?.(this.showAngle);
+  }
+
   /**
    * 鼠标移动事件处理
    */
@@ -148,7 +165,7 @@ class DrawBottom extends BasicDraw {
     const point = this.snap.getCursorPoint();
 
     if (this.status === 'drawing') {
-      this.currentBottomLine?.drawing(this.orthogonal, point);
+      this.currentBottomLine?.drawing(point);
     }
   }
 

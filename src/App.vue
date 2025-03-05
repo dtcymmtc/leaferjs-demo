@@ -8,6 +8,7 @@
       <Button @click="redo" :disabled="!canRedo">恢复</Button>
       <Divider type="vertical" />
       <Button @click="toggleOrthogonal" :type="orthogonal ? 'primary' : 'default'">正交</Button>
+      <Button @click="toggleShowAngle" :type="showAngle ? 'primary' : 'default'">显示夹角</Button>
       <Divider type="vertical" />
       <Button @click="exportData">导出数据</Button>
       <Button v-for="(item, index) in dataList" :key="index" @click="importData?.(item)">
@@ -30,9 +31,11 @@ const {
   importData,
   exportData,
   toggleOrthogonal,
+  toggleShowAngle,
   canRedo,
   canUndo,
   orthogonal,
+  showAngle,
 } = useDrawBottom(mainRef);
 
 type DataItem = Array<{
