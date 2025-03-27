@@ -197,10 +197,10 @@ export const adjustLineFromCenter = (line: Line, newLength: number): Point[] => 
 
   // 线段长度为0时，直接在中心点前后平分
   if (oldLength === 0) {
-    const half = newLength / 2;
+    const half = Math.floor(newLength / 2); // 舍弃小数部分
     return [
-      new Point({ x: round(start.x - half), y: round(start.y) }),
-      new Point({ x: round(start.x + half), y: round(start.y) }),
+      new Point({ x: start.x - half, y: start.y }),
+      new Point({ x: start.x + half, y: start.y }),
     ];
   }
 
@@ -213,17 +213,43 @@ export const adjustLineFromCenter = (line: Line, newLength: number): Point[] => 
   const uy = dy / oldLength;
 
   // 新线段一半长度
-  const halfLen = newLength / 2;
+  const halfLen = Math.floor(newLength / 2); // 舍弃小数部分
 
   // 计算新的起点与终点
-  const newStart = {
-    x: round(midX - ux * halfLen),
-    y: round(midY - uy * halfLen),
+  let newStart = {
+    x: Math.round(midX - ux * halfLen),
+    y: Math.round(midY - uy * halfLen),
   };
-  const newEnd = {
-    x: round(midX + ux * halfLen),
-    y: round(midY + uy * halfLen),
+  let newEnd = {
+    x: Math.round(midX + ux * halfLen),
+    y: Math.round(midY + uy * halfLen),
   };
+
+  // 调整坐标以确保长度精确
+  const adjustLength = (start: Point, end: Point, targetLength: number): [Point, Point] => {
+    const dx = end.x - start.x;
+    const dy = end.y - start.y;
+    const currentLength = Math.hypot(dx, dy);
+
+    if (currentLength === targetLength) return [start, end];
+
+    const scale = targetLength / currentLength;
+    const adjustedDx = Math.round(dx * scale);
+    const adjustedDy = Math.round(dy * scale);
+
+    const adjustedStart = new Point({
+      x: Math.round(midX - adjustedDx / 2),
+      y: Math.round(midY - adjustedDy / 2),
+    });
+    const adjustedEnd = new Point({
+      x: Math.round(midX + adjustedDx / 2),
+      y: Math.round(midY + adjustedDy / 2),
+    });
+
+    return [adjustedStart, adjustedEnd];
+  };
+
+  [newStart, newEnd] = adjustLength(new Point(newStart), new Point(newEnd), newLength);
 
   return [new Point(newStart), new Point(newEnd)];
 };

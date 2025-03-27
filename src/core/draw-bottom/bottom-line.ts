@@ -1,4 +1,5 @@
 import { Bounds, Line, Point, PropertyEvent } from 'leafer-editor';
+import { round } from 'lodash-es';
 import { AngleAuxiliaryLine, HintInput } from '../auxiliary';
 import type { EdgeAnnotationsUpdateOptions } from '../auxiliary/edge-annotations';
 import { BasicDraw, type BasicDrawOptions } from '../basic/basic-draw';
@@ -287,7 +288,7 @@ class BottomLine extends BasicDraw {
    * 显示提示
    */
   showHintInput(): void {
-    this.hintInput.showInput(this.line.width);
+    this.hintInput.showInput(round(this.line.width ?? 0));
   }
 
   /**
